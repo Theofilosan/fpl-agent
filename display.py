@@ -984,3 +984,272 @@ def print_eligibility_summary(
 
 
     console.print(table)
+
+# ============================================================
+# SQUAD ANALYSIS
+# ============================================================
+
+def print_squad_analysis(
+    squad_dataset,
+    analysis
+):
+    """
+    Display the current squad analysis.
+    """
+
+    console.print()
+
+    console.print(
+        "=" * 100
+    )
+
+    console.print(
+        "[bold]SQUAD ANALYSIS[/bold]"
+    )
+
+    console.print(
+        "=" * 100
+    )
+
+
+    # --------------------------------------------------------
+    # Captain / Vice Captain
+    # --------------------------------------------------------
+
+    captain = analysis.get(
+        "captain"
+    )
+
+    vice_captain = analysis.get(
+        "vice_captain"
+    )
+
+
+    if captain:
+
+        console.print(
+            f"Captain: "
+            f"[bold yellow]"
+            f"{captain['player']}"
+            f"[/bold yellow]"
+        )
+
+
+    if vice_captain:
+
+        console.print(
+            f"Vice Captain: "
+            f"[yellow]"
+            f"{vice_captain['player']}"
+            f"[/yellow]"
+        )
+
+
+    # --------------------------------------------------------
+    # Squad table
+    # --------------------------------------------------------
+
+    table = Table(
+        box=box.SIMPLE
+    )
+
+
+    table.add_column("Pos")
+    table.add_column("Player")
+    table.add_column("Team")
+    table.add_column("Price")
+    table.add_column("PPG", justify="right")
+    table.add_column("Fixtures", justify="right")
+    table.add_column("Status")
+
+
+    for player in squad_dataset:
+
+        fixture_score = player.get(
+            "fixture_score"
+        )
+
+
+        if fixture_score is None:
+
+            fixture_display = (
+                "[dim]N/A[/dim]"
+            )
+
+        elif fixture_score >= 8:
+
+            fixture_display = (
+                f"[green bold]"
+                f"{fixture_score:.1f}"
+                f"[/green bold]"
+            )
+
+        elif fixture_score >= 6:
+
+            fixture_display = (
+                f"[yellow]"
+                f"{fixture_score:.1f}"
+                f"[/yellow]"
+            )
+
+        else:
+
+            fixture_display = (
+                f"[red]"
+                f"{fixture_score:.1f}"
+                f"[/red]"
+            )
+
+
+        eligibility = player.get(
+            "eligibility",
+            "Unknown"
+        )
+
+
+        if eligibility == "Established":
+
+            status = (
+                "[green]Established[/green]"
+            )
+
+        elif eligibility == "Regular":
+
+            status = (
+                "[cyan]Regular[/cyan]"
+            )
+
+        elif eligibility == "Rotation":
+
+            status = (
+                "[yellow]Rotation[/yellow]"
+            )
+
+        elif eligibility == "Limited":
+
+            status = (
+                "[red]Limited[/red]"
+            )
+
+        else:
+
+            status = (
+                "[dim]Unknown[/dim]"
+            )
+
+
+        table.add_row(
+
+            str(
+                player["squad_position"]
+            ),
+
+            player["player"],
+
+            player["team"],
+
+            f"£{player['price']:.1f}m",
+
+            f"{player['points_per_game']:.1f}",
+
+            fixture_display,
+
+            status
+        )
+
+
+    console.print(
+        table
+    )
+
+
+    # --------------------------------------------------------
+    # Difficult fixtures
+    # --------------------------------------------------------
+
+    difficult = analysis.get(
+        "difficult_fixtures",
+        []
+    )
+
+
+    if difficult:
+
+        console.print()
+
+        console.print(
+            "[bold red]"
+            "⚠ Players with difficult fixtures"
+            "[/bold red]"
+        )
+
+
+        for player in difficult:
+
+            console.print(
+                f"  • {player['player']} "
+                f"({player['team']}) "
+                f"- Fixture Score: "
+                f"{player['fixture_score']:.1f}"
+            )
+
+
+    # --------------------------------------------------------
+    # Favourable fixtures
+    # --------------------------------------------------------
+
+    favourable = analysis.get(
+        "favourable_fixtures",
+        []
+    )
+
+
+    if favourable:
+
+        console.print()
+
+        console.print(
+            "[bold green]"
+            "✓ Players with favourable fixtures"
+            "[/bold green]"
+        )
+
+
+        for player in favourable:
+
+            console.print(
+                f"  • {player['player']} "
+                f"({player['team']}) "
+                f"- Fixture Score: "
+                f"{player['fixture_score']:.1f}"
+            )
+
+
+    # --------------------------------------------------------
+    # Watchlist
+    # --------------------------------------------------------
+
+    watchlist = analysis.get(
+        "watchlist",
+        []
+    )
+
+
+    if watchlist:
+
+        console.print()
+
+        console.print(
+            "[bold yellow]"
+            "👀 Players to monitor"
+            "[/bold yellow]"
+        )
+
+
+        for player in watchlist:
+
+            console.print(
+                f"  • {player['player']} "
+                f"({player['team']}) "
+                f"- Limited historical minutes"
+            )

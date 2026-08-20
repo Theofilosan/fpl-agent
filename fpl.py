@@ -10,30 +10,23 @@ from data import (
     build_player_map,
     build_player_dataset,
     build_fixture_dataset,
-    get_team_fixtures,
+    build_squad_dataset,
 )
 
 from analysis import (
-    calculate_fixture_score,
     calculate_all_fixture_scores,
     add_fixture_scores_to_players,
-    calculate_player_benchmarks,
     add_player_eligibility,
-    calculate_eligibility_summary,
+    analyze_squad,
 )
 
 from display import (
     console,
-    print_fixture_dataset_test,
-    print_team_fixtures,
     print_fixture_score_ranking,
-    print_player_dataset,
     print_gameweek_info,
     print_manager_info,
-    print_player_summary,
     print_my_team,
-    print_player_benchmarks,
-    print_eligibility_summary,
+    print_squad_analysis,
 )
 
 
@@ -42,6 +35,8 @@ from display import (
 # ============================================================
 
 MANAGER_ID = 6829404
+
+NUMBER_OF_GAMEWEEKS = 5
 
 
 # ============================================================
@@ -52,7 +47,12 @@ def get_gameweek_status(
     bootstrap
 ):
     """
-    Find current and next Gameweek.
+    Find the current and next Gameweek.
+
+    Returns:
+
+        current_gameweek
+        next_gameweek
     """
 
     events = bootstrap[
@@ -60,47 +60,42 @@ def get_gameweek_status(
     ]
 
 
-    current_events = [
+    current_gameweek = next(
 
-        event
+        (
+            event
 
-        for event in events
+            for event in events
 
-        if event.get("is_current")
-    ]
+            if event.get(
+                "is_current"
+            )
+        ),
 
-
-    next_events = [
-
-        event
-
-        for event in events
-
-        if event.get("is_next")
-    ]
-
-
-    current = (
-
-        current_events[0]
-
-        if current_events
-
-        else None
+        None
     )
 
 
-    next_gameweek = (
+    next_gameweek = next(
 
-        next_events[0]
+        (
+            event
 
-        if next_events
+            for event in events
 
-        else None
+            if event.get(
+                "is_next"
+            )
+        ),
+
+        None
     )
 
 
-    return current, next_gameweek
+    return (
+        current_gameweek,
+        next_gameweek
+    )
 
 
 # ============================================================
@@ -109,27 +104,33 @@ def get_gameweek_status(
 
 def main():
 
+    # ========================================================
+    # HEADER
+    # ========================================================
+
     console.print()
 
     console.print(
-        "=" * 50
+        "=" * 60
     )
 
     console.print(
-        "[bold]FPL AGENT - API TEST[/bold]"
+        "[bold]FPL AGENT[/bold]"
     )
 
     console.print(
-        "=" * 50
+        "=" * 60
     )
 
 
     # ========================================================
-    # 1. BOOTSTRAP DATA
+    # 1. LOAD FPL DATA
     # ========================================================
 
+    console.print()
+
     console.print(
-        "\nLoading FPL data..."
+        "[bold]Loading FPL data...[/bold]"
     )
 
 
@@ -182,37 +183,31 @@ def main():
     # ========================================================
 
     player_dataset = build_player_dataset(
+
         players,
+
         team_map
     )
 
+
     # ========================================================
-    # PLAYER ELIGIBILITY
+    # 4. PLAYER ELIGIBILITY
     # ========================================================
 
     player_dataset = add_player_eligibility(
+
         player_dataset
     )
 
 
-    eligibility_summary = (
-        calculate_eligibility_summary(
-            player_dataset
-        )
-    )
-
-
-    print_eligibility_summary(
-        eligibility_summary
-    )
-
-
     # ========================================================
-    # 4. LOAD FIXTURES
+    # 5. LOAD FIXTURES
     # ========================================================
+
+    console.print()
 
     console.print(
-        "\nLoading fixtures..."
+        "[bold]Loading fixtures...[/bold]"
     )
 
 
@@ -226,11 +221,13 @@ def main():
 
 
     # ========================================================
-    # 5. BUILD FIXTURE DATASET
+    # 6. BUILD FIXTURE DATASET
     # ========================================================
 
     fixture_dataset = build_fixture_dataset(
+
         fixtures,
+
         team_map
     )
 
@@ -238,16 +235,6 @@ def main():
     console.print(
         f"[green]✓ {len(fixture_dataset)} "
         f"fixture records created[/green]"
-    )
-
-
-    # ========================================================
-    # 6. FIXTURE DATASET TEST
-    # ========================================================
-
-    print_fixture_dataset_test(
-        fixture_dataset,
-        number_of_records=10
     )
 
 
@@ -263,178 +250,127 @@ def main():
 
 
     print_gameweek_info(
+
         current_gameweek,
+
         next_gameweek
     )
 
 
     # ========================================================
-    # 8. TEAM FIXTURE SCORES
+    # 8. FIXTURE ANALYSIS
     # ========================================================
 
     if next_gameweek:
 
         team_fixture_scores = (
             calculate_all_fixture_scores(
+
                 fixture_dataset=fixture_dataset,
 
                 teams=teams,
 
-                start_gameweek=next_gameweek["id"],
+                start_gameweek=(
+                    next_gameweek["id"]
+                ),
 
-                number_of_gameweeks=5
+                number_of_gameweeks=(
+                    NUMBER_OF_GAMEWEEKS
+                )
             )
         )
 
 
         print_fixture_score_ranking(
+
             team_fixture_scores,
 
-            number_of_gameweeks=5
+            number_of_gameweeks=(
+                NUMBER_OF_GAMEWEEKS
+            )
         )
 
 
-        # ====================================================
-        # 9. ADD FIXTURE SCORE TO PLAYERS
-        # ====================================================
+        # ----------------------------------------------------
+        # Add Fixture Score to every player
+        # ----------------------------------------------------
 
         player_dataset = (
             add_fixture_scores_to_players(
+
                 player_dataset=player_dataset,
 
-                team_fixture_scores=team_fixture_scores
+                team_fixture_scores=(
+                    team_fixture_scores
+                )
             )
-        )
-
-        # ====================================================
-        # CALCULATE PLAYER BENCHMARKS
-        # ====================================================
-
-        player_benchmarks = (
-            calculate_player_benchmarks(
-                player_dataset
-            )
-        )
-        print_player_benchmarks(
-            player_benchmarks,        
-            )
-
-
-        # ====================================================
-        # 10. DISPLAY ENRICHED PLAYER DATASET
-        # ====================================================
-
-        print_player_dataset(
-            player_dataset,
-
-            number_of_players=20
         )
 
 
     else:
 
+        console.print()
+
         console.print(
-            "\n[yellow]"
-            "No next Gameweek available."
+            "[yellow]"
+            "No upcoming Gameweek available."
             "[/yellow]"
         )
 
 
     # ========================================================
-    # 11. ARSENAL TEST
+    # 9. LOAD MANAGER
     # ========================================================
 
-    if next_gameweek:
+    console.print()
 
-        arsenal = next(
+    console.print(
+        "[bold]Loading manager...[/bold]"
+    )
 
-            (
-                team
 
-                for team in teams
+    try:
 
-                if team["name"] == "Arsenal"
-            ),
-
-            None
+        manager = get_manager(
+            MANAGER_ID
         )
 
 
-        if arsenal:
-
-            arsenal_fixtures = (
-                get_team_fixtures(
-                    fixture_dataset=fixture_dataset,
-
-                    team_id=arsenal["id"],
-
-                    start_gameweek=next_gameweek["id"],
-
-                    number_of_gameweeks=5
-                )
-            )
+        console.print(
+            "[green]✓ Manager data loaded[/green]"
+        )
 
 
-            print_team_fixtures(
-                arsenal_fixtures,
-
-                arsenal["name"]
-            )
+        print_manager_info(
+            manager
+        )
 
 
-            arsenal_score = (
-                calculate_fixture_score(
-                    arsenal_fixtures
-                )
-            )
+    except RuntimeError as error:
+
+        console.print(
+            "[red]"
+            "Could not load manager information."
+            "[/red]"
+        )
 
 
-            console.print(
-                f"\nArsenal Fixture Score: "
-                f"{arsenal_score}/10"
-            )
+        console.print(
+            str(error)
+        )
+
+
+        return
 
 
     # ========================================================
-    # 12. PLAYER DATA TEST
+    # 10. LOAD CURRENT SQUAD
     # ========================================================
 
-    print_player_summary(
-        players,
-        team_map
-    )
-
-
-    # ========================================================
-    # 13. MANAGER
-    # ========================================================
+    console.print()
 
     console.print(
-        "\nFetching manager information..."
-    )
-
-
-    manager = get_manager(
-        MANAGER_ID
-    )
-
-
-    console.print(
-        "[green]✓ Manager data loaded[/green]"
-    )
-
-
-    print_manager_info(
-        manager
-    )
-
-
-    # ========================================================
-    # 14. CURRENT SQUAD
-    # ========================================================
-
-    console.print(
-        "\nFetching your current squad..."
+        "[bold]Loading current squad...[/bold]"
     )
 
 
@@ -450,21 +386,14 @@ def main():
         )
 
 
-        print_my_team(
-            my_team,
-
-            player_map,
-
-            team_map
-        )
-
-
     except RuntimeError as error:
 
+        console.print()
+
         console.print(
-            "\n[yellow]"
-            "⚠ Could not retrieve current squad."
-            "[/yellow]"
+            "[red]"
+            "Could not load current squad."
+            "[/red]"
         )
 
 
@@ -473,23 +402,78 @@ def main():
         )
 
 
+        return
+
+
     # ========================================================
-    # DONE
+    # 11. DISPLAY CURRENT SQUAD
+    # ========================================================
+
+    print_my_team(
+
+        my_team,
+
+        player_map,
+
+        team_map
+    )
+
+
+    # ========================================================
+    # 12. BUILD SQUAD DATASET
+    # ========================================================
+
+    squad_dataset = build_squad_dataset(
+
+        my_team,
+
+        player_dataset
+    )
+
+
+    # ========================================================
+    # 13. ANALYZE SQUAD
+    # ========================================================
+
+    squad_analysis = analyze_squad(
+
+        squad_dataset
+    )
+
+
+    # ========================================================
+    # 14. DISPLAY SQUAD ANALYSIS
+    # ========================================================
+
+    print_squad_analysis(
+
+        squad_dataset,
+
+        squad_analysis
+    )
+
+
+    # ========================================================
+    # COMPLETE
     # ========================================================
 
     console.print()
 
     console.print(
-        "=" * 50
+        "=" * 60
     )
 
     console.print(
-        "[bold]API TEST COMPLETE[/bold]"
+        "[bold green]"
+        "FPL ANALYSIS COMPLETE"
+        "[/bold green]"
     )
 
     console.print(
-        "=" * 50
+        "=" * 60
     )
+
+    console.print()
 
 
 # ============================================================

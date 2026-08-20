@@ -68,15 +68,8 @@ def calculate_fixture_score(
     )
 
 
-    final_score = (
-        average_score
-        / 5
-        * 10
-    )
-
-
     return round(
-        final_score,
+        average_score / 5 * 10,
         1
     )
 
@@ -93,8 +86,6 @@ def calculate_all_fixture_scores(
 ):
     """
     Calculate Fixture Score for all teams.
-
-    Returns a list sorted from best to worst.
     """
 
     team_scores = []
@@ -104,10 +95,9 @@ def calculate_all_fixture_scores(
 
         team_id = team["id"]
 
-        team_name = team["name"]
-
 
         team_fixtures = get_team_fixtures(
+
             fixture_dataset=fixture_dataset,
 
             team_id=team_id,
@@ -125,22 +115,29 @@ def calculate_all_fixture_scores(
 
         team_scores.append({
 
-            "team_id": team_id,
+            "team_id":
+                team_id,
 
-            "team": team_name,
+            "team":
+                team["name"],
 
-            "fixture_score": fixture_score,
+            "fixture_score":
+                fixture_score,
 
-            "fixtures": team_fixtures,
+            "fixtures":
+                team_fixtures,
         })
 
 
     team_scores.sort(
-        key=lambda team: (
-            team["fixture_score"]
-            if team["fixture_score"] is not None
-            else -1
-        ),
+
+        key=lambda team:
+            (
+                team["fixture_score"]
+                if team["fixture_score"] is not None
+                else -1
+            ),
+
         reverse=True
     )
 
@@ -149,7 +146,7 @@ def calculate_all_fixture_scores(
 
 
 # ============================================================
-# ADD FIXTURE SCORE TO PLAYERS
+# ADD FIXTURE SCORES TO PLAYERS
 # ============================================================
 
 def add_fixture_scores_to_players(
@@ -157,15 +154,9 @@ def add_fixture_scores_to_players(
     team_fixture_scores
 ):
     """
-    Add the Fixture Score of each player's team
-    to the player's dataset record.
+    Add each team's Fixture Score
+    to its players.
     """
-
-    # --------------------------------------------------------
-    # Create:
-    #
-    # team_id -> fixture_score
-    # --------------------------------------------------------
 
     fixture_score_map = {
 
@@ -176,259 +167,28 @@ def add_fixture_scores_to_players(
     }
 
 
-    # --------------------------------------------------------
-    # Add score to each player
-    # --------------------------------------------------------
-
     for player in player_dataset:
-
-        team_id = player["team_id"]
-
 
         player["fixture_score"] = (
             fixture_score_map.get(
-                team_id
+                player["team_id"]
             )
         )
 
 
     return player_dataset
-# ============================================================
-# PRICE BRACKET
-# ============================================================
 
-def get_price_bracket(price):
-    """
-    Assign a player to a price bracket.
 
-    The brackets are intentionally simple for now.
-    We can make them position-specific later.
-
-    Examples:
-
-        £4.5m  -> £4-5m
-        £5.0m  -> £5-6m
-        £6.7m  -> £6-7m
-        £7.5m  -> £7-8m
-        £9.5m  -> £8-10m
-        £10.5m -> £10m+
-    """
-
-    if price < 5.0:
-
-        return "£4-5m"
-
-    elif price < 6.0:
-
-        return "£5-6m"
-
-    elif price < 7.0:
-
-        return "£6-7m"
-
-    elif price < 8.0:
-
-        return "£7-8m"
-
-    elif price < 10.0:
-
-        return "£8-10m"
-
-    else:
-
-        return "£10m+"
-
-
-# ============================================================
-# PLAYER BENCHMARKS
-# ============================================================
-
-def calculate_player_benchmarks(
-    player_dataset
-):
-    """
-    Calculate statistical benchmarks for players grouped by:
-
-        Position
-        +
-        Price Bracket
-
-    Example group:
-
-        Midfielder | £6-7m
-
-    The benchmark currently includes:
-
-        - Number of players
-        - Average PPG
-        - Average Form
-        - Average xG
-        - Average xA
-        - Average Minutes
-        - Average Ownership
-
-    Returns
-    -------
-    dict
-
-        {
-            ("Midfielder", "£6-7m"): {
-                ...
-            }
-        }
-    """
-
-    # --------------------------------------------------------
-    # Create empty groups
-    # --------------------------------------------------------
-
-    groups = {}
-
-
-    # --------------------------------------------------------
-    # Group players
-    # --------------------------------------------------------
-
-    for player in player_dataset:
-
-        position = player["position"]
-
-        price_bracket = get_price_bracket(
-            player["price"]
-        )
-
-
-        group_key = (
-            position,
-            price_bracket
-        )
-
-
-        if group_key not in groups:
-
-            groups[group_key] = []
-
-
-        groups[group_key].append(
-            player
-        )
-
-
-    # --------------------------------------------------------
-    # Calculate averages
-    # --------------------------------------------------------
-
-    benchmarks = {}
-
-
-    for group_key, players in groups.items():
-
-        number_of_players = len(
-            players
-        )
-
-
-        # ----------------------------------------------------
-        # Helper for calculating averages
-        # ----------------------------------------------------
-
-        def average(field):
-
-            values = [
-
-                player.get(
-                    field,
-                    0
-                )
-
-                for player in players
-            ]
-
-
-            if not values:
-
-                return 0
-
-
-            return (
-                sum(values)
-                / len(values)
-            )
-
-
-        # ----------------------------------------------------
-        # Store benchmark
-        # ----------------------------------------------------
-
-        benchmarks[group_key] = {
-
-            "position":
-                group_key[0],
-
-            "price_bracket":
-                group_key[1],
-
-            "players":
-                number_of_players,
-
-            "avg_ppg":
-                average(
-                    "points_per_game"
-                ),
-
-            "avg_form":
-                average(
-                    "form"
-                ),
-
-            "avg_xg":
-                average(
-                    "expected_goals"
-                ),
-
-            "avg_xa":
-                average(
-                    "expected_assists"
-                ),
-
-            "avg_minutes":
-                average(
-                    "minutes"
-                ),
-
-            "avg_ownership":
-                average(
-                    "ownership"
-                ),
-        }
-
-
-    return benchmarks
 # ============================================================
 # PLAYER ELIGIBILITY
 # ============================================================
 
-def classify_player_eligibility(minutes):
+def classify_player_eligibility(
+    minutes
+):
     """
-    Classify a player based on their historical minutes.
-
-    The thresholds are intentionally simple for now.
-    We will evaluate and tune them after seeing the
-    distribution across the full player dataset.
-
-    Categories:
-
-        < 450 minutes
-            Limited
-
-        450-1349 minutes
-            Rotation
-
-        1350-2249 minutes
-            Regular
-
-        >= 2250 minutes
-            Established
+    Classify players according to
+    historical minutes.
     """
 
     if minutes < 450:
@@ -456,15 +216,8 @@ def add_player_eligibility(
     player_dataset
 ):
     """
-    Add eligibility information to every player.
-
-    Adds:
-
-        eligibility
-        minutes_ratio
-
-    minutes_ratio is based on a theoretical maximum
-    of 3420 minutes (38 matches × 90 minutes).
+    Add eligibility and minutes ratio
+    to every player.
     """
 
     MAX_MINUTES = 3420
@@ -478,10 +231,6 @@ def add_player_eligibility(
         )
 
 
-        # ----------------------------------------------------
-        # Classification
-        # ----------------------------------------------------
-
         player["eligibility"] = (
             classify_player_eligibility(
                 minutes
@@ -489,23 +238,13 @@ def add_player_eligibility(
         )
 
 
-        # ----------------------------------------------------
-        # Minutes ratio
-        #
-        # Example:
-        #
-        # 1710 / 3420 = 0.50
-        # ----------------------------------------------------
-
         minutes_ratio = (
             minutes
             / MAX_MINUTES
         )
 
 
-        # Protect against unexpected values.
-
-        minutes_ratio = max(
+        player["minutes_ratio"] = max(
             0.0,
             min(
                 minutes_ratio,
@@ -514,123 +253,106 @@ def add_player_eligibility(
         )
 
 
-        player["minutes_ratio"] = (
-            round(
-                minutes_ratio,
-                3
-            )
-        )
-
-
     return player_dataset
 
 
 # ============================================================
-# ELIGIBILITY BENCHMARKS
+# SQUAD ANALYSIS
 # ============================================================
 
-def calculate_eligibility_summary(
-    player_dataset
+def analyze_squad(
+    squad_dataset
 ):
     """
-    Calculate how many players belong to each
-    eligibility category.
+    Perform a simple analysis of the
+    current squad.
 
-    Returns:
-
-        {
-            "Established": {...},
-            "Regular": {...},
-            "Rotation": {...},
-            "Limited": {...}
-        }
+    This is intentionally NOT making
+    transfer recommendations yet.
     """
 
-    categories = {
+    analysis = {
 
-        "Established": [],
+        "total_players":
+            len(squad_dataset),
 
-        "Regular": [],
+        "captain":
+            None,
 
-        "Rotation": [],
+        "vice_captain":
+            None,
 
-        "Limited": [],
+        "difficult_fixtures":
+            [],
+
+        "favourable_fixtures":
+            [],
+
+        "watchlist":
+            [],
     }
 
 
-    for player in player_dataset:
+    for player in squad_dataset:
 
-        eligibility = player.get(
-            "eligibility"
+        fixture_score = player.get(
+            "fixture_score"
         )
 
 
-        if eligibility in categories:
+        # ----------------------------------------------------
+        # Captain
+        # ----------------------------------------------------
 
-            categories[
-                eligibility
+        if player.get(
+            "is_captain"
+        ):
+
+            analysis["captain"] = player
+
+
+        # ----------------------------------------------------
+        # Vice captain
+        # ----------------------------------------------------
+
+        if player.get(
+            "is_vice_captain"
+        ):
+
+            analysis["vice_captain"] = player
+
+
+        # ----------------------------------------------------
+        # Fixture analysis
+        # ----------------------------------------------------
+
+        if fixture_score is not None:
+
+            if fixture_score < 5.5:
+
+                analysis[
+                    "difficult_fixtures"
+                ].append(player)
+
+
+            elif fixture_score >= 7.0:
+
+                analysis[
+                    "favourable_fixtures"
+                ].append(player)
+
+
+        # ----------------------------------------------------
+        # Historical sample warning
+        # ----------------------------------------------------
+
+        if player.get(
+            "eligibility"
+        ) == "Limited":
+
+            analysis[
+                "watchlist"
             ].append(player)
 
 
-    summary = {}
-
-
-    for category, players in categories.items():
-
-        if not players:
-
-            summary[category] = {
-
-                "players": 0,
-
-                "avg_minutes": 0,
-
-                "avg_ppg": 0,
-
-                "avg_points": 0,
-
-                "avg_ownership": 0,
-            }
-
-            continue
-
-
-        summary[category] = {
-
-            "players": len(players),
-
-            "avg_minutes": (
-                sum(
-                    player["minutes"]
-                    for player in players
-                )
-                / len(players)
-            ),
-
-            "avg_ppg": (
-                sum(
-                    player["points_per_game"]
-                    for player in players
-                )
-                / len(players)
-            ),
-
-            "avg_points": (
-                sum(
-                    player["total_points"]
-                    for player in players
-                )
-                / len(players)
-            ),
-
-            "avg_ownership": (
-                sum(
-                    player["ownership"]
-                    for player in players
-                )
-                / len(players)
-            ),
-        }
-
-
-    return summary
+    return analysis

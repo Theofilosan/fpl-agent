@@ -16,14 +16,14 @@ def build_team_map(teams):
 
 
 # ============================================================
-# PLAYER DATA
+# PLAYER MAP
 # ============================================================
 
 def build_player_map(players):
     """
     Create:
 
-        player_id -> player_data
+        player_id -> raw player data
     """
 
     return {
@@ -41,19 +41,21 @@ def build_player_dataset(
     team_map
 ):
     """
-    Build a structured player dataset.
-
-    This function extracts the player statistics
-    that will later be used by the analysis engine.
+    Build a clean internal player dataset
+    from the raw FPL API data.
     """
 
     player_dataset = []
 
 
     position_map = {
+
         1: "Goalkeeper",
+
         2: "Defender",
+
         3: "Midfielder",
+
         4: "Forward",
     }
 
@@ -62,196 +64,156 @@ def build_player_dataset(
 
         player_id = player["id"]
 
-        player_name = player["web_name"]
-
         team_id = player["team"]
-
-        team_name = team_map.get(
-            team_id,
-            "Unknown"
-        )
-
-
-        position = position_map.get(
-            player["element_type"],
-            "Unknown"
-        )
-
-
-        price = (
-            player["now_cost"]
-            / 10
-        )
-
-
-        total_points = player.get(
-            "total_points",
-            0
-        )
-
-
-        form = float(
-            player.get(
-                "form",
-                0
-            ) or 0
-        )
-
-
-        points_per_game = float(
-            player.get(
-                "points_per_game",
-                0
-            ) or 0
-        )
-
-
-        minutes = player.get(
-            "minutes",
-            0
-        )
-
-
-        goals = player.get(
-            "goals_scored",
-            0
-        )
-
-
-        assists = player.get(
-            "assists",
-            0
-        )
-
-
-        bonus = player.get(
-            "bonus",
-            0
-        )
-
-
-        bps = player.get(
-            "bps",
-            0
-        )
-
-
-        ownership = float(
-            player.get(
-                "selected_by_percent",
-                0
-            ) or 0
-        )
-
-
-        expected_goals = float(
-            player.get(
-                "expected_goals",
-                0
-            ) or 0
-        )
-
-
-        expected_assists = float(
-            player.get(
-                "expected_assists",
-                0
-            ) or 0
-        )
-
-
-        expected_goal_involvements = float(
-            player.get(
-                "expected_goal_involvements",
-                0
-            ) or 0
-        )
-
-
-        expected_goals_conceded = float(
-            player.get(
-                "expected_goals_conceded",
-                0
-            ) or 0
-        )
-
-
-        chance_next_round = player.get(
-            "chance_of_playing_next_round"
-        )
-
-
-        chance_this_round = player.get(
-            "chance_of_playing_this_round"
-        )
-
-
-        status = player.get(
-            "status"
-        )
-
-
-        news = player.get(
-            "news",
-            ""
-        )
 
 
         player_record = {
 
-            "player_id": player_id,
+            "player_id":
+                player_id,
 
-            "player": player_name,
+            "player":
+                player["web_name"],
 
-            "team_id": team_id,
+            "team_id":
+                team_id,
 
-            "team": team_name,
+            "team":
+                team_map.get(
+                    team_id,
+                    "Unknown"
+                ),
 
-            "position": position,
+            "position":
+                position_map.get(
+                    player["element_type"],
+                    "Unknown"
+                ),
 
-            "price": price,
+            "price":
+                player["now_cost"] / 10,
 
-            "total_points": total_points,
+            "total_points":
+                player.get(
+                    "total_points",
+                    0
+                ),
 
-            "form": form,
+            "form":
+                float(
+                    player.get(
+                        "form",
+                        0
+                    ) or 0
+                ),
 
-            "points_per_game": points_per_game,
+            "points_per_game":
+                float(
+                    player.get(
+                        "points_per_game",
+                        0
+                    ) or 0
+                ),
 
-            "minutes": minutes,
+            "minutes":
+                player.get(
+                    "minutes",
+                    0
+                ),
 
-            "goals": goals,
+            "goals":
+                player.get(
+                    "goals_scored",
+                    0
+                ),
 
-            "assists": assists,
+            "assists":
+                player.get(
+                    "assists",
+                    0
+                ),
 
-            "bonus": bonus,
+            "bonus":
+                player.get(
+                    "bonus",
+                    0
+                ),
 
-            "bps": bps,
+            "bps":
+                player.get(
+                    "bps",
+                    0
+                ),
 
-            "ownership": ownership,
+            "ownership":
+                float(
+                    player.get(
+                        "selected_by_percent",
+                        0
+                    ) or 0
+                ),
 
-            "expected_goals": expected_goals,
+            "expected_goals":
+                float(
+                    player.get(
+                        "expected_goals",
+                        0
+                    ) or 0
+                ),
 
-            "expected_assists": expected_assists,
+            "expected_assists":
+                float(
+                    player.get(
+                        "expected_assists",
+                        0
+                    ) or 0
+                ),
 
             "expected_goal_involvements":
-                expected_goal_involvements,
+                float(
+                    player.get(
+                        "expected_goal_involvements",
+                        0
+                    ) or 0
+                ),
 
             "expected_goals_conceded":
-                expected_goals_conceded,
+                float(
+                    player.get(
+                        "expected_goals_conceded",
+                        0
+                    ) or 0
+                ),
 
             "chance_next_round":
-                chance_next_round,
+                player.get(
+                    "chance_of_playing_next_round"
+                ),
 
             "chance_this_round":
-                chance_this_round,
+                player.get(
+                    "chance_of_playing_this_round"
+                ),
 
-            "status": status,
+            "status":
+                player.get(
+                    "status"
+                ),
 
-            "news": news,
+            "news":
+                player.get(
+                    "news",
+                    ""
+                ),
 
-            # This will be populated later
-            # by the analysis layer.
-            "fixture_score": None,
+            "fixture_score":
+                None,
+
+            "eligibility":
+                None,
+
+            "minutes_ratio":
+                None,
         }
 
 
@@ -274,9 +236,10 @@ def build_fixture_dataset(
     """
     Convert raw FPL fixtures into a team-centric dataset.
 
-    Each fixture becomes TWO records:
-        - Home team perspective
-        - Away team perspective
+    Each fixture creates two records:
+
+        Home team perspective
+        Away team perspective
     """
 
     fixture_dataset = []
@@ -284,16 +247,26 @@ def build_fixture_dataset(
 
     for fixture in fixtures:
 
-        if fixture.get("event") is None:
+        if fixture.get(
+            "event"
+        ) is None:
 
             continue
 
 
-        gameweek = fixture["event"]
+        gameweek = fixture[
+            "event"
+        ]
 
-        home_team_id = fixture["team_h"]
 
-        away_team_id = fixture["team_a"]
+        home_team_id = fixture[
+            "team_h"
+        ]
+
+
+        away_team_id = fixture[
+            "team_a"
+        ]
 
 
         home_team = team_map.get(
@@ -308,90 +281,94 @@ def build_fixture_dataset(
         )
 
 
-        home_difficulty = fixture.get(
-            "team_h_difficulty"
-        )
+        # ----------------------------------------------------
+        # HOME TEAM
+        # ----------------------------------------------------
+
+        fixture_dataset.append({
+
+            "fixture_id":
+                fixture["id"],
+
+            "gameweek":
+                gameweek,
+
+            "team_id":
+                home_team_id,
+
+            "team":
+                home_team,
+
+            "opponent_id":
+                away_team_id,
+
+            "opponent":
+                away_team,
+
+            "home":
+                True,
+
+            "difficulty":
+                fixture.get(
+                    "team_h_difficulty"
+                ),
+
+            "kickoff_time":
+                fixture.get(
+                    "kickoff_time"
+                ),
+
+            "finished":
+                fixture.get(
+                    "finished",
+                    False
+                ),
+        })
 
 
-        away_difficulty = fixture.get(
-            "team_a_difficulty"
-        )
+        # ----------------------------------------------------
+        # AWAY TEAM
+        # ----------------------------------------------------
 
+        fixture_dataset.append({
 
-        # ====================================================
-        # HOME RECORD
-        # ====================================================
+            "fixture_id":
+                fixture["id"],
 
-        home_record = {
+            "gameweek":
+                gameweek,
 
-            "fixture_id": fixture["id"],
+            "team_id":
+                away_team_id,
 
-            "gameweek": gameweek,
+            "team":
+                away_team,
 
-            "team": home_team,
+            "opponent_id":
+                home_team_id,
 
-            "team_id": home_team_id,
+            "opponent":
+                home_team,
 
-            "opponent": away_team,
+            "home":
+                False,
 
-            "opponent_id": away_team_id,
+            "difficulty":
+                fixture.get(
+                    "team_a_difficulty"
+                ),
 
-            "home": True,
+            "kickoff_time":
+                fixture.get(
+                    "kickoff_time"
+                ),
 
-            "difficulty": home_difficulty,
-
-            "kickoff_time": fixture.get(
-                "kickoff_time"
-            ),
-
-            "finished": fixture.get(
-                "finished",
-                False
-            ),
-        }
-
-
-        fixture_dataset.append(
-            home_record
-        )
-
-
-        # ====================================================
-        # AWAY RECORD
-        # ====================================================
-
-        away_record = {
-
-            "fixture_id": fixture["id"],
-
-            "gameweek": gameweek,
-
-            "team": away_team,
-
-            "team_id": away_team_id,
-
-            "opponent": home_team,
-
-            "opponent_id": home_team_id,
-
-            "home": False,
-
-            "difficulty": away_difficulty,
-
-            "kickoff_time": fixture.get(
-                "kickoff_time"
-            ),
-
-            "finished": fixture.get(
-                "finished",
-                False
-            ),
-        }
-
-
-        fixture_dataset.append(
-            away_record
-        )
+            "finished":
+                fixture.get(
+                    "finished",
+                    False
+                ),
+        })
 
 
     return fixture_dataset
@@ -408,7 +385,8 @@ def get_team_fixtures(
     number_of_gameweeks=5
 ):
     """
-    Get fixtures for one specific team.
+    Return fixtures for one team
+    within the requested Gameweek range.
     """
 
     end_gameweek = (
@@ -443,3 +421,108 @@ def get_team_fixtures(
 
 
     return team_fixtures
+
+
+# ============================================================
+# SQUAD DATASET
+# ============================================================
+
+def build_squad_dataset(
+    my_team,
+    player_dataset
+):
+    """
+    Combine the manager's current squad
+    with the enriched player dataset.
+    """
+
+    player_map = {
+
+        player["player_id"]:
+            player
+
+        for player in player_dataset
+    }
+
+
+    squad_dataset = []
+
+
+    for pick in my_team.get(
+        "picks",
+        []
+    ):
+
+        player_id = pick[
+            "element"
+        ]
+
+
+        player = player_map.get(
+            player_id
+        )
+
+
+        if not player:
+
+            continue
+
+
+        squad_player = player.copy()
+
+
+        squad_player["squad_position"] = (
+            pick["position"]
+        )
+
+
+        squad_player["multiplier"] = (
+            pick.get(
+                "multiplier",
+                1
+            )
+        )
+
+
+        squad_player["is_captain"] = (
+            pick.get(
+                "is_captain",
+                False
+            )
+        )
+
+
+        squad_player["is_vice_captain"] = (
+            pick.get(
+                "is_vice_captain",
+                False
+            )
+        )
+
+
+        squad_player["purchase_price"] = (
+            pick.get(
+                "purchase_price"
+            )
+        )
+
+
+        squad_player["selling_price"] = (
+            pick.get(
+                "selling_price"
+            )
+        )
+
+
+        squad_dataset.append(
+            squad_player
+        )
+
+
+    squad_dataset.sort(
+        key=lambda player:
+            player["squad_position"]
+    )
+
+
+    return squad_dataset

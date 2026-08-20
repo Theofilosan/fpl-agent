@@ -58,7 +58,7 @@ def get_json(endpoint):
 
     url = f"{BASE_URL}{endpoint}"
 
-    print(f"\nGET {url}")
+    print(f"GET {url}")
 
 
     try:
