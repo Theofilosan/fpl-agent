@@ -10,6 +10,7 @@ from data import (
     build_player_map,
     build_fixture_dataset,
     get_team_fixtures,
+    build_player_dataset,
 )
 
 from analysis import (
@@ -26,6 +27,7 @@ from display import (
     print_manager_info,
     print_player_summary,
     print_my_team,
+    print_player_dataset,
 )
 
 
@@ -154,6 +156,7 @@ def main():
     )
 
 
+
     console.print(
         f"[green]✓ {len(players)} "
         f"players loaded[/green]"
@@ -163,6 +166,21 @@ def main():
     console.print(
         f"[green]✓ {len(teams)} "
         f"teams loaded[/green]"
+    )
+
+    # ========================================================
+    # BUILD PLAYER DATASET
+    # ========================================================
+
+    player_dataset = build_player_dataset(  
+        players,
+        team_map
+    )
+
+
+    print_player_dataset(
+        player_dataset,
+        number_of_players=20
     )
 
 

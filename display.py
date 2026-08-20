@@ -591,3 +591,89 @@ def print_my_team(
 
 
     console.print(table)
+    # ============================================================
+# PLAYER DATASET
+# ============================================================
+
+def print_player_dataset(
+    player_dataset,
+    number_of_players=20
+):
+    """
+    Display a sample of the structured player dataset.
+    """
+
+    console.print()
+
+    console.print(
+        "=" * 90
+    )
+
+    console.print(
+        "[bold]PLAYER DATASET TEST[/bold]"
+    )
+
+    console.print(
+        "=" * 90
+    )
+
+
+    console.print(
+        f"Total players: "
+        f"{len(player_dataset)}"
+    )
+
+
+    table = Table(
+        box=box.SIMPLE
+    )
+
+
+    table.add_column("Player")
+    table.add_column("Team")
+    table.add_column("Pos")
+    table.add_column("Price")
+    table.add_column("Pts")
+    table.add_column("Form")
+    table.add_column("PPG")
+    table.add_column("Min")
+    table.add_column("xG")
+    table.add_column("xA")
+    table.add_column("Own%")
+
+
+    for player in player_dataset[
+        :number_of_players
+    ]:
+
+        table.add_row(
+
+            player["player"],
+
+            player["team"],
+
+            player["position"],
+
+            f"£{player['price']:.1f}m",
+
+            str(
+                player["total_points"]
+            ),
+
+            f"{player['form']:.1f}",
+
+            f"{player['points_per_game']:.1f}",
+
+            str(
+                player["minutes"]
+            ),
+
+            f"{player['expected_goals']:.2f}",
+
+            f"{player['expected_assists']:.2f}",
+
+            f"{player['ownership']:.1f}%"
+        )
+
+
+    console.print(table)

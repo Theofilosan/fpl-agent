@@ -216,3 +216,282 @@ def get_team_fixtures(
 
 
     return team_fixtures
+
+# ============================================================
+# PLAYER DATASET
+# ============================================================
+
+def build_player_dataset(
+    players,
+    team_map
+):
+    """
+    Build a structured player dataset from the raw
+    FPL bootstrap player data.
+
+    This function does NOT calculate a Player Score yet.
+
+    It simply extracts the player statistics that we will
+    later use for our analysis.
+
+    Returns
+    -------
+    list
+        A list containing one dictionary per player.
+    """
+
+    player_dataset = []
+
+
+    # --------------------------------------------------------
+    # Process every player
+    # --------------------------------------------------------
+
+    for player in players:
+
+        # ----------------------------------------------------
+        # Basic information
+        # ----------------------------------------------------
+
+        player_id = player["id"]
+
+        player_name = player["web_name"]
+
+        team_id = player["team"]
+
+        team_name = team_map.get(
+            team_id,
+            "Unknown"
+        )
+
+
+        # ----------------------------------------------------
+        # Position
+        #
+        # FPL element_type:
+        #
+        # 1 = Goalkeeper
+        # 2 = Defender
+        # 3 = Midfielder
+        # 4 = Forward
+        # ----------------------------------------------------
+
+        position_map = {
+            1: "Goalkeeper",
+            2: "Defender",
+            3: "Midfielder",
+            4: "Forward",
+        }
+
+
+        position = position_map.get(
+            player["element_type"],
+            "Unknown"
+        )
+
+
+        # ----------------------------------------------------
+        # Price
+        #
+        # FPL stores prices as tenths.
+        #
+        # Example:
+        #
+        # 65 -> £6.5m
+        # ----------------------------------------------------
+
+        price = (
+            player["now_cost"]
+            / 10
+        )
+
+
+        # ----------------------------------------------------
+        # Performance statistics
+        # ----------------------------------------------------
+
+        total_points = player.get(
+            "total_points",
+            0
+        )
+
+        form = player.get(
+            "form",
+            "0"
+        )
+
+        points_per_game = player.get(
+            "points_per_game",
+            "0"
+        )
+
+        minutes = player.get(
+            "minutes",
+            0
+        )
+
+        goals = player.get(
+            "goals_scored",
+            0
+        )
+
+        assists = player.get(
+            "assists",
+            0
+        )
+
+        bonus = player.get(
+            "bonus",
+            0
+        )
+
+        bps = player.get(
+            "bps",
+            0
+        )
+
+
+        # ----------------------------------------------------
+        # Ownership
+        #
+        # selected_by_percent is returned as a string
+        # by the FPL API.
+        #
+        # Example:
+        #
+        # "32.4"
+        # ----------------------------------------------------
+
+        selected_by_percent = player.get(
+            "selected_by_percent",
+            "0"
+        )
+
+
+        # ----------------------------------------------------
+        # Expected statistics
+        #
+        # These will become very useful later.
+        # ----------------------------------------------------
+
+        expected_goals = player.get(
+            "expected_goals",
+            "0"
+        )
+
+        expected_assists = player.get(
+            "expected_assists",
+            "0"
+        )
+
+        expected_goal_involvements = player.get(
+            "expected_goal_involvements",
+            "0"
+        )
+
+        expected_goals_conceded = player.get(
+            "expected_goals_conceded",
+            "0"
+        )
+
+
+        # ----------------------------------------------------
+        # Availability
+        # ----------------------------------------------------
+
+        chance_of_playing_next_round = player.get(
+            "chance_of_playing_next_round"
+        )
+
+        chance_of_playing_this_round = player.get(
+            "chance_of_playing_this_round"
+        )
+
+        status = player.get(
+            "status"
+        )
+
+        news = player.get(
+            "news",
+            ""
+        )
+
+
+        # ----------------------------------------------------
+        # Create structured player record
+        # ----------------------------------------------------
+
+        player_record = {
+
+            "player_id": player_id,
+
+            "player": player_name,
+
+            "team_id": team_id,
+
+            "team": team_name,
+
+            "position": position,
+
+            "price": price,
+
+            "total_points": total_points,
+
+            "form": float(form or 0),
+
+            "points_per_game": float(
+                points_per_game or 0
+            ),
+
+            "minutes": minutes,
+
+            "goals": goals,
+
+            "assists": assists,
+
+            "bonus": bonus,
+
+            "bps": bps,
+
+            "ownership": float(
+                selected_by_percent or 0
+            ),
+
+            "expected_goals": float(
+                expected_goals or 0
+            ),
+
+            "expected_assists": float(
+                expected_assists or 0
+            ),
+
+            "expected_goal_involvements": float(
+                expected_goal_involvements or 0
+            ),
+
+            "expected_goals_conceded": float(
+                expected_goals_conceded or 0
+            ),
+
+            "chance_next_round":
+                chance_of_playing_next_round,
+
+            "chance_this_round":
+                chance_of_playing_this_round,
+
+            "status": status,
+
+            "news": news,
+        }
+
+
+        player_dataset.append(
+            player_record
+        )
+
+
+    # --------------------------------------------------------
+    # Return the complete dataset
+    # --------------------------------------------------------
+
+    return player_dataset
