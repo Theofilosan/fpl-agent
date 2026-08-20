@@ -438,6 +438,133 @@ def get_team_fixtures(
 
 
     return team_fixtures
+# ============================================================
+# CALCULATE FIXTURE SCORE
+# ============================================================
+
+def calculate_fixture_score(team_fixtures):
+    """
+    Calculate a Fixture Score from 0 to 10.
+
+    FPL difficulty:
+        1 = very easy
+        2 = easy
+        3 = medium
+        4 = difficult
+        5 = very difficult
+
+    We convert difficulty into a positive score:
+
+        Difficulty 1 -> 5
+        Difficulty 2 -> 4
+        Difficulty 3 -> 3
+        Difficulty 4 -> 2
+        Difficulty 5 -> 1
+
+    Then we calculate the average over the selected fixtures
+    and convert it to a 0-10 scale.
+
+    Returns
+    -------
+    float
+        Fixture Score from 0 to 10.
+    """
+
+    # --------------------------------------------------------
+    # No fixtures
+    # --------------------------------------------------------
+
+    if not team_fixtures:
+        return None
+
+
+    # --------------------------------------------------------
+    # Convert difficulty to positive score
+    # --------------------------------------------------------
+
+    difficulty_scores = {
+        1: 5,
+        2: 4,
+        3: 3,
+        4: 2,
+        5: 1,
+    }
+
+
+    scores = []
+
+
+    # --------------------------------------------------------
+    # Calculate score for every fixture
+    # --------------------------------------------------------
+
+    for fixture in team_fixtures:
+
+        difficulty = fixture.get(
+            "difficulty"
+        )
+
+
+        # Skip fixtures without difficulty data
+
+        if difficulty not in difficulty_scores:
+            continue
+
+
+        fixture_score = difficulty_scores[
+            difficulty
+        ]
+
+
+        scores.append(
+            fixture_score
+        )
+
+
+    # --------------------------------------------------------
+    # Make sure we actually have scores
+    # --------------------------------------------------------
+
+    if not scores:
+        return None
+
+
+    # --------------------------------------------------------
+    # Average fixture score
+    #
+    # Range:
+    # 1 -> 5
+    # --------------------------------------------------------
+
+    average_score = (
+        sum(scores)
+        / len(scores)
+    )
+
+
+    # --------------------------------------------------------
+    # Convert 1-5 scale to 0-10 scale
+    #
+    # Example:
+    #
+    # average = 4
+    #
+    # 4 / 5 * 10 = 8
+    # --------------------------------------------------------
+
+    final_score = (
+        average_score
+        / 5
+        * 10
+    )
+
+
+    # Round to one decimal place
+
+    return round(
+        final_score,
+        1
+    )
 
 
 # ============================================================
@@ -1044,6 +1171,7 @@ def main():
                 start_gameweek=next_gameweek["id"],
                 number_of_gameweeks=5
             )
+    
 
 
             print_team_fixtures(
@@ -1058,7 +1186,19 @@ def main():
                 "Arsenal not found."
             )
 
+    # ----------------------------------------------------
+    # Calculate Arsenal Fixture Score
+    # ----------------------------------------------------
 
+    arsenal_fixture_score = calculate_fixture_score(
+        arsenal_fixtures
+    )
+
+
+    print(
+        f"\nArsenal Fixture Score: "
+        f"{arsenal_fixture_score}/10"
+    )
     # ========================================================
     # 8. TEST PLAYER DATA
     # ========================================================
