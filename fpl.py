@@ -107,6 +107,134 @@ def get_bootstrap():
 
     return get_json("/bootstrap-static/")
 
+# ============================================================
+# GET FIXTURES
+# ============================================================
+
+def get_fixtures():
+    """
+    Get all FPL fixtures.
+
+    This is a public endpoint, so authentication is not
+    required.
+
+    Returns
+    -------
+    list
+        List containing all FPL fixtures.
+    """
+
+    return get_json("/fixtures/")
+
+# ============================================================
+# PRINT UPCOMING FIXTURES
+# ============================================================
+
+def print_upcoming_fixtures(fixtures, team_map, number_of_gameweeks=5):
+    """
+    Print upcoming fixtures for the next N gameweeks.
+
+    Parameters
+    ----------
+    fixtures : list
+        Raw fixtures returned by the FPL API.
+
+    team_map : dict
+        Dictionary mapping team IDs to team names.
+
+    number_of_gameweeks : int
+        How many upcoming gameweeks to display.
+    """
+
+    print("\n" + "=" * 50)
+    print("          UPCOMING FIXTURES")
+    print("=" * 50)
+
+    # --------------------------------------------------------
+    # Find the next available gameweek
+    # --------------------------------------------------------
+
+    upcoming_events = [
+        fixture["event"]
+        for fixture in fixtures
+        if fixture.get("event") is not None
+    ]
+
+    if not upcoming_events:
+        print("No fixtures available.")
+        return
+
+    first_gameweek = min(upcoming_events)
+
+    last_gameweek = (
+        first_gameweek
+        + number_of_gameweeks
+        - 1
+    )
+
+    # --------------------------------------------------------
+    # Filter fixtures
+    # --------------------------------------------------------
+
+    upcoming_fixtures = [
+        fixture
+        for fixture in fixtures
+        if (
+            fixture.get("event") is not None
+            and first_gameweek
+            <= fixture["event"]
+            <= last_gameweek
+        )
+    ]
+
+    # --------------------------------------------------------
+    # Display fixtures
+    # --------------------------------------------------------
+
+    current_gameweek = None
+
+    for fixture in upcoming_fixtures:
+
+        gameweek = fixture["event"]
+
+        # Print a new header whenever Gameweek changes
+        if gameweek != current_gameweek:
+
+            current_gameweek = gameweek
+
+            print(
+                f"\nGameweek {gameweek}"
+            )
+            print("-" * 30)
+
+        # Get team names
+        home_team = team_map.get(
+            fixture["team_h"],
+            "Unknown"
+        )
+
+        away_team = team_map.get(
+            fixture["team_a"],
+            "Unknown"
+        )
+
+        # Difficulty values
+        home_difficulty = (
+            fixture.get("team_h_difficulty")
+        )
+
+        away_difficulty = (
+            fixture.get("team_a_difficulty")
+        )
+
+        print(
+            f"{home_team:20} "
+            f"{home_difficulty}/5"
+            f"  vs  "
+            f"{away_team:20} "
+            f"{away_difficulty}/5"
+        )
+
 
 # ============================================================
 # GAMEWEEK STATUS
@@ -391,6 +519,18 @@ def main():
     bootstrap = get_bootstrap()
 
     print("✓ Bootstrap data loaded")
+
+    # --------------------------------------------------------
+    # Get fixtures
+    # --------------------------------------------------------
+
+    print("\nLoading fixtures...")
+
+    fixtures = get_fixtures()
+
+    print(
+    f"✓ {len(fixtures)} fixtures loaded"
+    )
 
     # --------------------------------------------------------
     # 2. Extract players and teams
