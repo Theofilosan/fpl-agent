@@ -14,13 +14,11 @@ console = Console()
 # DIFFICULTY COLOR
 # ============================================================
 
-def get_difficulty_style(difficulty):
+def get_difficulty_style(
+    difficulty
+):
     """
     Return a Rich style based on FPL difficulty.
-
-        1-2 -> green
-        3   -> yellow
-        4-5 -> red
     """
 
     if difficulty in (1, 2):
@@ -46,11 +44,9 @@ def print_fixture_dataset_test(
     fixture_dataset,
     number_of_records=10
 ):
-    """
-    Display first fixture records.
-    """
 
     console.print()
+
     console.print(
         "=" * 50
     )
@@ -132,9 +128,6 @@ def print_team_fixtures(
     team_fixtures,
     team_name
 ):
-    """
-    Display fixtures for one team.
-    """
 
     console.print()
 
@@ -210,9 +203,6 @@ def print_fixture_score_ranking(
     team_scores,
     number_of_gameweeks=5
 ):
-    """
-    Display Fixture Score ranking.
-    """
 
     console.print()
 
@@ -264,7 +254,9 @@ def print_fixture_score_ranking(
 
         if score is None:
 
-            score_display = "[dim]N/A[/dim]"
+            score_display = (
+                "[dim]N/A[/dim]"
+            )
 
         elif score >= 8:
 
@@ -298,6 +290,144 @@ def print_fixture_score_ranking(
             team["team"],
 
             score_display
+        )
+
+
+    console.print(table)
+
+
+# ============================================================
+# PLAYER DATASET
+# ============================================================
+
+def print_player_dataset(
+    player_dataset,
+    number_of_players=20
+):
+    """
+    Display a sample of the structured player dataset.
+
+    The dataset should already contain the team's
+    Fixture Score.
+    """
+
+    console.print()
+
+    console.print(
+        "=" * 110
+    )
+
+    console.print(
+        "[bold]PLAYER DATASET TEST[/bold]"
+    )
+
+    console.print(
+        "=" * 110
+    )
+
+
+    console.print(
+        f"Total players: "
+        f"{len(player_dataset)}"
+    )
+
+
+    table = Table(
+        box=box.SIMPLE
+    )
+
+
+    table.add_column("Player")
+    table.add_column("Team")
+    table.add_column("Pos")
+    table.add_column("Price")
+    table.add_column("Pts")
+    table.add_column("Form")
+    table.add_column("PPG")
+    table.add_column("Min")
+    table.add_column("xG")
+    table.add_column("xA")
+    table.add_column("Own%")
+    table.add_column("Fixtures")
+
+
+    for player in player_dataset[
+        :number_of_players
+    ]:
+
+        # ----------------------------------------------------
+        # Fixture Score
+        # ----------------------------------------------------
+
+        fixture_score = player.get(
+            "fixture_score"
+        )
+
+
+        if fixture_score is None:
+
+            fixture_display = (
+                "[dim]N/A[/dim]"
+            )
+
+        elif fixture_score >= 8:
+
+            fixture_display = (
+                f"[green bold]"
+                f"{fixture_score:.1f}"
+                f"[/green bold]"
+            )
+
+        elif fixture_score >= 6:
+
+            fixture_display = (
+                f"[yellow]"
+                f"{fixture_score:.1f}"
+                f"[/yellow]"
+            )
+
+        else:
+
+            fixture_display = (
+                f"[red]"
+                f"{fixture_score:.1f}"
+                f"[/red]"
+            )
+
+
+        # ----------------------------------------------------
+        # Player row
+        # ----------------------------------------------------
+
+        table.add_row(
+
+            player["player"],
+
+            player["team"],
+
+            player["position"],
+
+            f"£{player['price']:.1f}m",
+
+            str(
+                player["total_points"]
+            ),
+
+            f"{player['form']:.1f}",
+
+            f"{player['points_per_game']:.1f}",
+
+            str(
+                player["minutes"]
+            ),
+
+            f"{player['expected_goals']:.2f}",
+
+            f"{player['expected_assists']:.2f}",
+
+            f"{player['ownership']:.1f}%",
+
+            fixture_display
         )
 
 
@@ -369,7 +499,9 @@ def print_gameweek_info(
 # MANAGER INFORMATION
 # ============================================================
 
-def print_manager_info(manager):
+def print_manager_info(
+    manager
+):
 
     console.print()
 
@@ -561,13 +693,17 @@ def print_my_team(
 
         if pick.get("is_captain"):
 
-            status = "[bold red]C[/bold red]"
+            status = (
+                "[bold red]C[/bold red]"
+            )
 
         elif pick.get(
             "is_vice_captain"
         ):
 
-            status = "[yellow]VC[/yellow]"
+            status = (
+                "[yellow]VC[/yellow]"
+            )
 
         else:
 
@@ -587,92 +723,6 @@ def print_my_team(
             f"£{price:.1f}m",
 
             status
-        )
-
-
-    console.print(table)
-    # ============================================================
-# PLAYER DATASET
-# ============================================================
-
-def print_player_dataset(
-    player_dataset,
-    number_of_players=20
-):
-    """
-    Display a sample of the structured player dataset.
-    """
-
-    console.print()
-
-    console.print(
-        "=" * 90
-    )
-
-    console.print(
-        "[bold]PLAYER DATASET TEST[/bold]"
-    )
-
-    console.print(
-        "=" * 90
-    )
-
-
-    console.print(
-        f"Total players: "
-        f"{len(player_dataset)}"
-    )
-
-
-    table = Table(
-        box=box.SIMPLE
-    )
-
-
-    table.add_column("Player")
-    table.add_column("Team")
-    table.add_column("Pos")
-    table.add_column("Price")
-    table.add_column("Pts")
-    table.add_column("Form")
-    table.add_column("PPG")
-    table.add_column("Min")
-    table.add_column("xG")
-    table.add_column("xA")
-    table.add_column("Own%")
-
-
-    for player in player_dataset[
-        :number_of_players
-    ]:
-
-        table.add_row(
-
-            player["player"],
-
-            player["team"],
-
-            player["position"],
-
-            f"£{player['price']:.1f}m",
-
-            str(
-                player["total_points"]
-            ),
-
-            f"{player['form']:.1f}",
-
-            f"{player['points_per_game']:.1f}",
-
-            str(
-                player["minutes"]
-            ),
-
-            f"{player['expected_goals']:.2f}",
-
-            f"{player['expected_assists']:.2f}",
-
-            f"{player['ownership']:.1f}%"
         )
 
 

@@ -11,7 +11,7 @@ BASE_URL = "https://fantasy.premierleague.com/api"
 
 
 # ============================================================
-# LOAD ENVIRONMENT VARIABLES
+# ENVIRONMENT
 # ============================================================
 
 load_dotenv()
@@ -54,14 +54,12 @@ if FPL_AUTH_TOKEN:
 def get_json(endpoint):
     """
     Send a GET request to an FPL API endpoint.
-
-    Returns:
-        Parsed JSON response.
     """
 
     url = f"{BASE_URL}{endpoint}"
 
     print(f"\nGET {url}")
+
 
     try:
 
@@ -77,56 +75,35 @@ def get_json(endpoint):
         ) from error
 
 
-    # --------------------------------------------------------
-    # Successful request
-    # --------------------------------------------------------
-
     if response.status_code == 200:
 
         return response.json()
 
 
-    # --------------------------------------------------------
-    # Authentication error
-    # --------------------------------------------------------
-
     if response.status_code in (401, 403):
 
         raise RuntimeError(
-            f"\nFPL API returned HTTP {response.status_code}.\n"
+            f"\nFPL API returned HTTP "
+            f"{response.status_code}.\n"
             "This endpoint requires authentication.\n"
             "Check FPL_AUTH_TOKEN in your .env file."
         )
 
 
-    # --------------------------------------------------------
-    # Not found
-    # --------------------------------------------------------
-
     if response.status_code == 404:
 
         raise RuntimeError(
             f"\nFPL API returned HTTP 404.\n"
-            f"Endpoint not found or data is not currently available:\n"
-            f"{url}"
+            f"Endpoint not found:\n{url}"
         )
 
-
-    # --------------------------------------------------------
-    # Rate limit
-    # --------------------------------------------------------
 
     if response.status_code == 429:
 
         raise RuntimeError(
-            "\nFPL API rate limit reached (HTTP 429).\n"
-            "Wait a little before making more requests."
+            "\nFPL API rate limit reached (HTTP 429)."
         )
 
-
-    # --------------------------------------------------------
-    # Other errors
-    # --------------------------------------------------------
 
     raise RuntimeError(
         f"\nFPL API request failed.\n"
@@ -142,12 +119,6 @@ def get_json(endpoint):
 def get_bootstrap():
     """
     Get the main FPL dataset.
-
-    Contains:
-        - Players
-        - Teams
-        - Gameweeks
-        - Player statistics
     """
 
     return get_json(

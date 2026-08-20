@@ -8,14 +8,15 @@ from fpl_api import (
 from data import (
     build_team_map,
     build_player_map,
+    build_player_dataset,
     build_fixture_dataset,
     get_team_fixtures,
-    build_player_dataset,
 )
 
 from analysis import (
     calculate_fixture_score,
     calculate_all_fixture_scores,
+    add_fixture_scores_to_players,
 )
 
 from display import (
@@ -23,11 +24,11 @@ from display import (
     print_fixture_dataset_test,
     print_team_fixtures,
     print_fixture_score_ranking,
+    print_player_dataset,
     print_gameweek_info,
     print_manager_info,
     print_player_summary,
     print_my_team,
-    print_player_dataset,
 )
 
 
@@ -42,12 +43,16 @@ MANAGER_ID = 6829404
 # GAMEWEEK STATUS
 # ============================================================
 
-def get_gameweek_status(bootstrap):
+def get_gameweek_status(
+    bootstrap
+):
     """
     Find current and next Gameweek.
     """
 
-    events = bootstrap["events"]
+    events = bootstrap[
+        "events"
+    ]
 
 
     current_events = [
@@ -115,7 +120,7 @@ def main():
 
 
     # ========================================================
-    # 1. LOAD BOOTSTRAP
+    # 1. BOOTSTRAP DATA
     # ========================================================
 
     console.print(
@@ -139,12 +144,11 @@ def main():
         "elements"
     ]
 
+
     teams = bootstrap[
         "teams"
     ]
 
-
-    # Build lookup maps
 
     team_map = build_team_map(
         teams
@@ -154,7 +158,6 @@ def main():
     player_map = build_player_map(
         players
     )
-
 
 
     console.print(
@@ -168,24 +171,19 @@ def main():
         f"teams loaded[/green]"
     )
 
+
     # ========================================================
-    # BUILD PLAYER DATASET
+    # 3. BUILD PLAYER DATASET
     # ========================================================
 
-    player_dataset = build_player_dataset(  
+    player_dataset = build_player_dataset(
         players,
         team_map
     )
 
 
-    print_player_dataset(
-        player_dataset,
-        number_of_players=20
-    )
-
-
     # ========================================================
-    # 3. FIXTURES
+    # 4. LOAD FIXTURES
     # ========================================================
 
     console.print(
@@ -203,7 +201,7 @@ def main():
 
 
     # ========================================================
-    # 4. BUILD FIXTURE DATASET
+    # 5. BUILD FIXTURE DATASET
     # ========================================================
 
     fixture_dataset = build_fixture_dataset(
@@ -219,7 +217,7 @@ def main():
 
 
     # ========================================================
-    # 5. FIXTURE DATASET TEST
+    # 6. FIXTURE DATASET TEST
     # ========================================================
 
     print_fixture_dataset_test(
@@ -229,7 +227,7 @@ def main():
 
 
     # ========================================================
-    # 6. GAMEWEEK STATUS
+    # 7. GAMEWEEK STATUS
     # ========================================================
 
     current_gameweek, next_gameweek = (
@@ -246,7 +244,7 @@ def main():
 
 
     # ========================================================
-    # 7. FIXTURE SCORE RANKING
+    # 8. TEAM FIXTURE SCORES
     # ========================================================
 
     if next_gameweek:
@@ -271,8 +269,41 @@ def main():
         )
 
 
+        # ====================================================
+        # 9. ADD FIXTURE SCORE TO PLAYERS
+        # ====================================================
+
+        player_dataset = (
+            add_fixture_scores_to_players(
+                player_dataset=player_dataset,
+
+                team_fixture_scores=team_fixture_scores
+            )
+        )
+
+
+        # ====================================================
+        # 10. DISPLAY ENRICHED PLAYER DATASET
+        # ====================================================
+
+        print_player_dataset(
+            player_dataset,
+
+            number_of_players=20
+        )
+
+
+    else:
+
+        console.print(
+            "\n[yellow]"
+            "No next Gameweek available."
+            "[/yellow]"
+        )
+
+
     # ========================================================
-    # 8. ARSENAL TEST
+    # 11. ARSENAL TEST
     # ========================================================
 
     if next_gameweek:
@@ -327,7 +358,7 @@ def main():
 
 
     # ========================================================
-    # 9. PLAYER DATA
+    # 12. PLAYER DATA TEST
     # ========================================================
 
     print_player_summary(
@@ -337,7 +368,7 @@ def main():
 
 
     # ========================================================
-    # 10. MANAGER
+    # 13. MANAGER
     # ========================================================
 
     console.print(
@@ -361,7 +392,7 @@ def main():
 
 
     # ========================================================
-    # 11. CURRENT SQUAD
+    # 14. CURRENT SQUAD
     # ========================================================
 
     console.print(
