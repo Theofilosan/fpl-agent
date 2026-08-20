@@ -727,3 +727,144 @@ def print_my_team(
 
 
     console.print(table)
+    # ============================================================
+# PLAYER BENCHMARKS
+# ============================================================
+
+def print_player_benchmarks(
+    benchmarks
+):
+    """
+    Display player benchmarks grouped by:
+
+        Position
+        +
+        Price Bracket
+    """
+
+    console.print()
+
+    console.print(
+        "=" * 100
+    )
+
+    console.print(
+        "[bold]PLAYER BENCHMARKS[/bold]"
+    )
+
+    console.print(
+        "=" * 100
+    )
+
+
+    table = Table(
+        box=box.SIMPLE
+    )
+
+
+    table.add_column(
+        "Position"
+    )
+
+    table.add_column(
+        "Price Range"
+    )
+
+    table.add_column(
+        "Players",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg PPG",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg Form",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg xG",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg xA",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg Minutes",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg Own%",
+        justify="right"
+    )
+
+
+    # --------------------------------------------------------
+    # Sort groups
+    #
+    # First by position
+    # Then by price bracket
+    # --------------------------------------------------------
+
+    position_order = {
+
+        "Goalkeeper": 1,
+        "Defender": 2,
+        "Midfielder": 3,
+        "Forward": 4,
+    }
+
+
+    sorted_benchmarks = sorted(
+
+        benchmarks.values(),
+
+        key=lambda benchmark: (
+            position_order.get(
+                benchmark["position"],
+                99
+            ),
+
+            benchmark["price_bracket"]
+        )
+    )
+
+
+    # --------------------------------------------------------
+    # Display rows
+    # --------------------------------------------------------
+
+    for benchmark in sorted_benchmarks:
+
+        table.add_row(
+
+            benchmark["position"],
+
+            benchmark["price_bracket"],
+
+            str(
+                benchmark["players"]
+            ),
+
+            f"{benchmark['avg_ppg']:.2f}",
+
+            f"{benchmark['avg_form']:.2f}",
+
+            f"{benchmark['avg_xg']:.2f}",
+
+            f"{benchmark['avg_xa']:.2f}",
+
+            f"{benchmark['avg_minutes']:.0f}",
+
+            f"{benchmark['avg_ownership']:.1f}%"
+        )
+
+
+    console.print(table)

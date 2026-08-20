@@ -17,6 +17,7 @@ from analysis import (
     calculate_fixture_score,
     calculate_all_fixture_scores,
     add_fixture_scores_to_players,
+    calculate_player_benchmarks,
 )
 
 from display import (
@@ -29,6 +30,7 @@ from display import (
     print_manager_info,
     print_player_summary,
     print_my_team,
+    print_player_benchmarks,
 )
 
 
@@ -280,6 +282,19 @@ def main():
                 team_fixture_scores=team_fixture_scores
             )
         )
+
+        # ====================================================
+        # CALCULATE PLAYER BENCHMARKS
+        # ====================================================
+
+        player_benchmarks = (
+            calculate_player_benchmarks(
+                player_dataset
+            )
+        )
+        print_player_benchmarks(
+            player_benchmarks,        
+            )
 
 
         # ====================================================

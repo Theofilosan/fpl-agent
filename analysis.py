@@ -193,3 +193,214 @@ def add_fixture_scores_to_players(
 
 
     return player_dataset
+# ============================================================
+# PRICE BRACKET
+# ============================================================
+
+def get_price_bracket(price):
+    """
+    Assign a player to a price bracket.
+
+    The brackets are intentionally simple for now.
+    We can make them position-specific later.
+
+    Examples:
+
+        £4.5m  -> £4-5m
+        £5.0m  -> £5-6m
+        £6.7m  -> £6-7m
+        £7.5m  -> £7-8m
+        £9.5m  -> £8-10m
+        £10.5m -> £10m+
+    """
+
+    if price < 5.0:
+
+        return "£4-5m"
+
+    elif price < 6.0:
+
+        return "£5-6m"
+
+    elif price < 7.0:
+
+        return "£6-7m"
+
+    elif price < 8.0:
+
+        return "£7-8m"
+
+    elif price < 10.0:
+
+        return "£8-10m"
+
+    else:
+
+        return "£10m+"
+
+
+# ============================================================
+# PLAYER BENCHMARKS
+# ============================================================
+
+def calculate_player_benchmarks(
+    player_dataset
+):
+    """
+    Calculate statistical benchmarks for players grouped by:
+
+        Position
+        +
+        Price Bracket
+
+    Example group:
+
+        Midfielder | £6-7m
+
+    The benchmark currently includes:
+
+        - Number of players
+        - Average PPG
+        - Average Form
+        - Average xG
+        - Average xA
+        - Average Minutes
+        - Average Ownership
+
+    Returns
+    -------
+    dict
+
+        {
+            ("Midfielder", "£6-7m"): {
+                ...
+            }
+        }
+    """
+
+    # --------------------------------------------------------
+    # Create empty groups
+    # --------------------------------------------------------
+
+    groups = {}
+
+
+    # --------------------------------------------------------
+    # Group players
+    # --------------------------------------------------------
+
+    for player in player_dataset:
+
+        position = player["position"]
+
+        price_bracket = get_price_bracket(
+            player["price"]
+        )
+
+
+        group_key = (
+            position,
+            price_bracket
+        )
+
+
+        if group_key not in groups:
+
+            groups[group_key] = []
+
+
+        groups[group_key].append(
+            player
+        )
+
+
+    # --------------------------------------------------------
+    # Calculate averages
+    # --------------------------------------------------------
+
+    benchmarks = {}
+
+
+    for group_key, players in groups.items():
+
+        number_of_players = len(
+            players
+        )
+
+
+        # ----------------------------------------------------
+        # Helper for calculating averages
+        # ----------------------------------------------------
+
+        def average(field):
+
+            values = [
+
+                player.get(
+                    field,
+                    0
+                )
+
+                for player in players
+            ]
+
+
+            if not values:
+
+                return 0
+
+
+            return (
+                sum(values)
+                / len(values)
+            )
+
+
+        # ----------------------------------------------------
+        # Store benchmark
+        # ----------------------------------------------------
+
+        benchmarks[group_key] = {
+
+            "position":
+                group_key[0],
+
+            "price_bracket":
+                group_key[1],
+
+            "players":
+                number_of_players,
+
+            "avg_ppg":
+                average(
+                    "points_per_game"
+                ),
+
+            "avg_form":
+                average(
+                    "form"
+                ),
+
+            "avg_xg":
+                average(
+                    "expected_goals"
+                ),
+
+            "avg_xa":
+                average(
+                    "expected_assists"
+                ),
+
+            "avg_minutes":
+                average(
+                    "minutes"
+                ),
+
+            "avg_ownership":
+                average(
+                    "ownership"
+                ),
+        }
+
+
+    return benchmarks
