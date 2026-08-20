@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 # CONFIGURATION
 # ============================================================
 
-# Base URL for the Fantasy Premier League API
 BASE_URL = "https://fantasy.premierleague.com/api"
 
 # Your FPL Manager ID
@@ -18,7 +17,6 @@ MANAGER_ID = 6829404
 # LOAD ENVIRONMENT VARIABLES
 # ============================================================
 
-# Load variables from .env
 load_dotenv()
 
 # Authentication token for private FPL endpoints
@@ -29,7 +27,6 @@ FPL_AUTH_TOKEN = os.getenv("FPL_AUTH_TOKEN")
 # HTTP SESSION
 # ============================================================
 
-# Create one reusable HTTP session
 session = requests.Session()
 
 session.headers.update({
@@ -47,7 +44,6 @@ session.headers.update({
 
 # Add authentication header if token exists
 if FPL_AUTH_TOKEN:
-
     session.headers.update({
         "X-API-Authorization": FPL_AUTH_TOKEN
     })
@@ -61,32 +57,20 @@ def get_json(endpoint):
     """
     Send a GET request to an FPL API endpoint.
 
-    Parameters
-    ----------
-    endpoint : str
-        API endpoint such as:
-        /bootstrap-static/
-
-    Returns
-    -------
-    dict | list
-        Parsed JSON response.
+    Returns the decoded JSON response.
     """
 
-    # Build complete URL
     url = f"{BASE_URL}{endpoint}"
 
     print(f"\nGET {url}")
 
     try:
-
         response = session.get(
             url,
             timeout=15
         )
 
     except requests.RequestException as error:
-
         raise RuntimeError(
             f"Network error while calling FPL API: {error}"
         ) from error
@@ -97,7 +81,6 @@ def get_json(endpoint):
     # --------------------------------------------------------
 
     if response.status_code == 200:
-
         return response.json()
 
 
@@ -106,7 +89,6 @@ def get_json(endpoint):
     # --------------------------------------------------------
 
     if response.status_code in (401, 403):
-
         raise RuntimeError(
             f"\nFPL API returned HTTP {response.status_code}.\n"
             "This endpoint requires authentication.\n"
@@ -119,7 +101,6 @@ def get_json(endpoint):
     # --------------------------------------------------------
 
     if response.status_code == 404:
-
         raise RuntimeError(
             f"\nFPL API returned HTTP 404.\n"
             f"Endpoint not found or data is not currently available:\n"
@@ -132,7 +113,6 @@ def get_json(endpoint):
     # --------------------------------------------------------
 
     if response.status_code == 429:
-
         raise RuntimeError(
             "\nFPL API rate limit reached (HTTP 429).\n"
             "Wait a little before making more requests."
@@ -140,7 +120,7 @@ def get_json(endpoint):
 
 
     # --------------------------------------------------------
-    # Other HTTP errors
+    # Other errors
     # --------------------------------------------------------
 
     raise RuntimeError(
@@ -194,14 +174,9 @@ def get_fixtures():
 
 def build_team_map(teams):
     """
-    Create a dictionary mapping:
+    Create:
 
         team_id -> team_name
-
-    Example:
-
-        1 -> Arsenal
-        2 -> Aston Villa
     """
 
     return {
@@ -216,12 +191,9 @@ def build_team_map(teams):
 
 def build_player_map(players):
     """
-    Create a dictionary mapping:
+    Create:
 
         player_id -> player_data
-
-    This allows us to quickly find a player using
-    the player ID returned by the squad endpoint.
     """
 
     return {
@@ -238,7 +210,7 @@ def build_fixture_dataset(fixtures, team_map):
     """
     Convert raw FPL fixtures into a team-centric dataset.
 
-    Each fixture is converted into TWO records.
+    Each fixture becomes TWO records.
 
     Example:
 
@@ -247,34 +219,30 @@ def build_fixture_dataset(fixtures, team_map):
     becomes:
 
         Arsenal
-            GW1
-            vs Manchester United
-            HOME
-            difficulty = 2
+        GW1
+        HOME
+        vs Manchester United
+        difficulty = X
 
         Manchester United
-            GW1
-            vs Arsenal
-            AWAY
-            difficulty = 4
-
-    This structure will later allow us to calculate
-    fixture difficulty for every team.
+        GW1
+        AWAY
+        vs Arsenal
+        difficulty = X
     """
 
     fixture_dataset = []
 
 
     # --------------------------------------------------------
-    # Loop through all fixtures
+    # Loop through all raw fixtures
     # --------------------------------------------------------
 
     for fixture in fixtures:
 
-        # Some fixtures may not have a Gameweek yet.
-        # We skip those.
+        # Some fixtures may not have a Gameweek assigned.
+        # Skip those.
         if fixture.get("event") is None:
-
             continue
 
 
@@ -289,7 +257,7 @@ def build_fixture_dataset(fixtures, team_map):
         away_team_id = fixture["team_a"]
 
 
-        # Convert team IDs to team names
+        # Convert IDs into team names
 
         home_team = team_map.get(
             home_team_id,
@@ -303,7 +271,7 @@ def build_fixture_dataset(fixtures, team_map):
 
 
         # ----------------------------------------------------
-        # FPL difficulty ratings
+        # Difficulty ratings
         # ----------------------------------------------------
 
         home_difficulty = fixture.get(
@@ -320,17 +288,13 @@ def build_fixture_dataset(fixtures, team_map):
         # ====================================================
 
         home_record = {
-
             "fixture_id": fixture["id"],
-
             "gameweek": gameweek,
 
             "team": home_team,
-
             "team_id": home_team_id,
 
             "opponent": away_team,
-
             "opponent_id": away_team_id,
 
             "home": True,
@@ -358,17 +322,13 @@ def build_fixture_dataset(fixtures, team_map):
         # ====================================================
 
         away_record = {
-
             "fixture_id": fixture["id"],
-
             "gameweek": gameweek,
 
             "team": away_team,
-
             "team_id": away_team_id,
 
             "opponent": home_team,
-
             "opponent_id": home_team_id,
 
             "home": False,
@@ -391,7 +351,93 @@ def build_fixture_dataset(fixtures, team_map):
         )
 
 
+    # IMPORTANT:
+    # Return the completed dataset.
+    #
+    # Without this return statement,
+    # build_fixture_dataset() would return None.
+
     return fixture_dataset
+
+
+# ============================================================
+# GET TEAM FIXTURES
+# ============================================================
+
+def get_team_fixtures(
+    fixture_dataset,
+    team_id,
+    start_gameweek,
+    number_of_gameweeks=5
+):
+    """
+    Get upcoming fixtures for one specific team.
+
+    Parameters
+    ----------
+    fixture_dataset : list
+        Structured fixture dataset.
+
+    team_id : int
+        FPL ID of the team.
+
+    start_gameweek : int
+        First Gameweek to include.
+
+    number_of_gameweeks : int
+        Number of Gameweeks to return.
+
+    Returns
+    -------
+    list
+        Fixtures for the selected team.
+    """
+
+    # Example:
+    #
+    # start_gameweek = 1
+    # number_of_gameweeks = 5
+    #
+    # Result:
+    #
+    # GW1 -> GW5
+
+    end_gameweek = (
+        start_gameweek
+        + number_of_gameweeks
+        - 1
+    )
+
+
+    # Filter fixtures for the selected team
+    # and requested Gameweek range.
+
+    team_fixtures = [
+        fixture
+        for fixture in fixture_dataset
+        if (
+            fixture["team_id"] == team_id
+            and start_gameweek
+            <= fixture["gameweek"]
+            <= end_gameweek
+        )
+    ]
+
+
+    # Sort chronologically.
+    #
+    # First by Gameweek,
+    # then by kickoff time.
+
+    team_fixtures.sort(
+        key=lambda fixture: (
+            fixture["gameweek"],
+            fixture["kickoff_time"] or ""
+        )
+    )
+
+
+    return team_fixtures
 
 
 # ============================================================
@@ -403,30 +449,28 @@ def print_fixture_dataset_test(
     number_of_records=10
 ):
     """
-    Print the first few records of the structured
-    fixture dataset.
-
-    This is currently only a sanity check.
+    Print the first few records of the fixture dataset.
     """
 
     print("\n" + "=" * 50)
     print("       FIXTURE DATASET TEST")
     print("=" * 50)
 
+
     print(
         f"Total fixture records: "
         f"{len(fixture_dataset)}"
     )
 
+
     print(
         f"\nFirst {number_of_records} records:"
     )
 
+
     for fixture in fixture_dataset[
         :number_of_records
     ]:
-
-        # Convert True/False to readable text
 
         location = (
             "HOME"
@@ -446,12 +490,58 @@ def print_fixture_dataset_test(
 
 
 # ============================================================
+# PRINT TEAM FIXTURES
+# ============================================================
+
+def print_team_fixtures(
+    team_fixtures,
+    team_name
+):
+    """
+    Print fixtures for one team.
+    """
+
+    print("\n" + "=" * 50)
+    print(
+        f"       {team_name.upper()} - NEXT FIXTURES"
+    )
+    print("=" * 50)
+
+
+    if not team_fixtures:
+
+        print(
+            "No fixtures found."
+        )
+
+        return
+
+
+    for fixture in team_fixtures:
+
+        location = (
+            "HOME"
+            if fixture["home"]
+            else "AWAY"
+        )
+
+
+        print(
+            f"GW{fixture['gameweek']:2} | "
+            f"{location:4} | "
+            f"{fixture['opponent']:20} | "
+            f"Difficulty: "
+            f"{fixture['difficulty']}/5"
+        )
+
+
+# ============================================================
 # GAMEWEEK STATUS
 # ============================================================
 
 def get_gameweek_status(bootstrap):
     """
-    Find the current and next FPL Gameweek.
+    Find the current and next Gameweek.
     """
 
     events = bootstrap["events"]
@@ -498,7 +588,7 @@ def get_gameweek_status(bootstrap):
 
 def get_manager(manager_id):
     """
-    Get public information about an FPL manager.
+    Get public manager information.
     """
 
     return get_json(
@@ -587,7 +677,9 @@ def print_gameweek_info(
     print("=" * 30)
 
 
+    # --------------------------------------------------------
     # Current Gameweek
+    # --------------------------------------------------------
 
     if current:
 
@@ -597,10 +689,12 @@ def print_gameweek_info(
             f"{current['name']}"
         )
 
+
         print(
             f"Finished: "
             f"{current['finished']}"
         )
+
 
         print(
             f"Deadline: "
@@ -614,7 +708,9 @@ def print_gameweek_info(
         )
 
 
+    # --------------------------------------------------------
     # Next Gameweek
+    # --------------------------------------------------------
 
     if next_gameweek:
 
@@ -623,6 +719,7 @@ def print_gameweek_info(
             f"{next_gameweek['id']} - "
             f"{next_gameweek['name']}"
         )
+
 
         print(
             f"Deadline: "
@@ -661,7 +758,8 @@ def print_player_summary(
 
     for player in players[:10]:
 
-        # FPL stores price in tenths.
+        # FPL stores player prices in tenths.
+        #
         # Example:
         # 60 -> £6.0m
 
@@ -771,7 +869,7 @@ def print_my_team(
         position = pick["position"]
 
 
-        # Captain / vice captain
+        # Captain / Vice Captain
 
         if pick.get("is_captain"):
 
@@ -836,10 +934,7 @@ def main():
 
     # IMPORTANT:
     #
-    # We MUST build team_map BEFORE building
-    # the fixture dataset.
-    #
-    # This was the cause of your UnboundLocalError.
+    # Build team_map BEFORE building the fixture dataset.
 
     team_map = build_team_map(
         teams
@@ -922,7 +1017,50 @@ def main():
 
 
     # ========================================================
-    # 7. TEST PLAYER DATA
+    # 7. TEST TEAM FIXTURES
+    # ========================================================
+
+    if next_gameweek:
+
+        # ----------------------------------------------------
+        # Find Arsenal dynamically
+        # ----------------------------------------------------
+
+        arsenal = next(
+            (
+                team
+                for team in teams
+                if team["name"] == "Arsenal"
+            ),
+            None
+        )
+
+
+        if arsenal:
+
+            arsenal_fixtures = get_team_fixtures(
+                fixture_dataset=fixture_dataset,
+                team_id=arsenal["id"],
+                start_gameweek=next_gameweek["id"],
+                number_of_gameweeks=5
+            )
+
+
+            print_team_fixtures(
+                arsenal_fixtures,
+                arsenal["name"]
+            )
+
+
+        else:
+
+            print(
+                "Arsenal not found."
+            )
+
+
+    # ========================================================
+    # 8. TEST PLAYER DATA
     # ========================================================
 
     print_player_summary(
@@ -932,7 +1070,7 @@ def main():
 
 
     # ========================================================
-    # 8. GET MANAGER INFORMATION
+    # 9. GET MANAGER INFORMATION
     # ========================================================
 
     print(
@@ -956,7 +1094,7 @@ def main():
 
 
     # ========================================================
-    # 9. GET CURRENT SQUAD
+    # 10. GET CURRENT SQUAD
     # ========================================================
 
     print(
