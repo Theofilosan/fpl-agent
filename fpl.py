@@ -18,6 +18,8 @@ from analysis import (
     calculate_all_fixture_scores,
     add_fixture_scores_to_players,
     calculate_player_benchmarks,
+    add_player_eligibility,
+    calculate_eligibility_summary,
 )
 
 from display import (
@@ -31,6 +33,7 @@ from display import (
     print_player_summary,
     print_my_team,
     print_player_benchmarks,
+    print_eligibility_summary,
 )
 
 
@@ -181,6 +184,26 @@ def main():
     player_dataset = build_player_dataset(
         players,
         team_map
+    )
+
+    # ========================================================
+    # PLAYER ELIGIBILITY
+    # ========================================================
+
+    player_dataset = add_player_eligibility(
+        player_dataset
+    )
+
+
+    eligibility_summary = (
+        calculate_eligibility_summary(
+            player_dataset
+        )
+    )
+
+
+    print_eligibility_summary(
+        eligibility_summary
     )
 
 

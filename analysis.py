@@ -404,3 +404,233 @@ def calculate_player_benchmarks(
 
 
     return benchmarks
+# ============================================================
+# PLAYER ELIGIBILITY
+# ============================================================
+
+def classify_player_eligibility(minutes):
+    """
+    Classify a player based on their historical minutes.
+
+    The thresholds are intentionally simple for now.
+    We will evaluate and tune them after seeing the
+    distribution across the full player dataset.
+
+    Categories:
+
+        < 450 minutes
+            Limited
+
+        450-1349 minutes
+            Rotation
+
+        1350-2249 minutes
+            Regular
+
+        >= 2250 minutes
+            Established
+    """
+
+    if minutes < 450:
+
+        return "Limited"
+
+    elif minutes < 1350:
+
+        return "Rotation"
+
+    elif minutes < 2250:
+
+        return "Regular"
+
+    else:
+
+        return "Established"
+
+
+# ============================================================
+# ADD PLAYER ELIGIBILITY
+# ============================================================
+
+def add_player_eligibility(
+    player_dataset
+):
+    """
+    Add eligibility information to every player.
+
+    Adds:
+
+        eligibility
+        minutes_ratio
+
+    minutes_ratio is based on a theoretical maximum
+    of 3420 minutes (38 matches × 90 minutes).
+    """
+
+    MAX_MINUTES = 3420
+
+
+    for player in player_dataset:
+
+        minutes = player.get(
+            "minutes",
+            0
+        )
+
+
+        # ----------------------------------------------------
+        # Classification
+        # ----------------------------------------------------
+
+        player["eligibility"] = (
+            classify_player_eligibility(
+                minutes
+            )
+        )
+
+
+        # ----------------------------------------------------
+        # Minutes ratio
+        #
+        # Example:
+        #
+        # 1710 / 3420 = 0.50
+        # ----------------------------------------------------
+
+        minutes_ratio = (
+            minutes
+            / MAX_MINUTES
+        )
+
+
+        # Protect against unexpected values.
+
+        minutes_ratio = max(
+            0.0,
+            min(
+                minutes_ratio,
+                1.0
+            )
+        )
+
+
+        player["minutes_ratio"] = (
+            round(
+                minutes_ratio,
+                3
+            )
+        )
+
+
+    return player_dataset
+
+
+# ============================================================
+# ELIGIBILITY BENCHMARKS
+# ============================================================
+
+def calculate_eligibility_summary(
+    player_dataset
+):
+    """
+    Calculate how many players belong to each
+    eligibility category.
+
+    Returns:
+
+        {
+            "Established": {...},
+            "Regular": {...},
+            "Rotation": {...},
+            "Limited": {...}
+        }
+    """
+
+    categories = {
+
+        "Established": [],
+
+        "Regular": [],
+
+        "Rotation": [],
+
+        "Limited": [],
+    }
+
+
+    for player in player_dataset:
+
+        eligibility = player.get(
+            "eligibility"
+        )
+
+
+        if eligibility in categories:
+
+            categories[
+                eligibility
+            ].append(player)
+
+
+    summary = {}
+
+
+    for category, players in categories.items():
+
+        if not players:
+
+            summary[category] = {
+
+                "players": 0,
+
+                "avg_minutes": 0,
+
+                "avg_ppg": 0,
+
+                "avg_points": 0,
+
+                "avg_ownership": 0,
+            }
+
+            continue
+
+
+        summary[category] = {
+
+            "players": len(players),
+
+            "avg_minutes": (
+                sum(
+                    player["minutes"]
+                    for player in players
+                )
+                / len(players)
+            ),
+
+            "avg_ppg": (
+                sum(
+                    player["points_per_game"]
+                    for player in players
+                )
+                / len(players)
+            ),
+
+            "avg_points": (
+                sum(
+                    player["total_points"]
+                    for player in players
+                )
+                / len(players)
+            ),
+
+            "avg_ownership": (
+                sum(
+                    player["ownership"]
+                    for player in players
+                )
+                / len(players)
+            ),
+        }
+
+
+    return summary

@@ -349,6 +349,7 @@ def print_player_dataset(
     table.add_column("xA")
     table.add_column("Own%")
     table.add_column("Fixtures")
+    table.add_column("Eligibility")
 
 
     for player in player_dataset[
@@ -393,6 +394,9 @@ def print_player_dataset(
                 f"{fixture_score:.1f}"
                 f"[/red]"
             )
+
+    
+        
 
 
         # ----------------------------------------------------
@@ -864,6 +868,118 @@ def print_player_benchmarks(
             f"{benchmark['avg_minutes']:.0f}",
 
             f"{benchmark['avg_ownership']:.1f}%"
+        )
+
+
+    console.print(table)
+    # ============================================================
+    # PLAYER ELIGIBILITY SUMMARY
+    # ============================================================
+
+def print_eligibility_summary(
+    summary
+):
+    """
+    Display the distribution of players across
+    eligibility categories.
+    """
+
+    console.print()
+
+    console.print(
+        "=" * 90
+    )
+
+    console.print(
+        "[bold]PLAYER ELIGIBILITY SUMMARY[/bold]"
+    )
+
+    console.print(
+        "=" * 90
+    )
+
+
+    table = Table(
+        box=box.SIMPLE
+    )
+
+
+    table.add_column(
+        "Category"
+    )
+
+    table.add_column(
+        "Players",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg Minutes",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg PPG",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg Points",
+        justify="right"
+    )
+
+    table.add_column(
+        "Avg Own%",
+        justify="right"
+    )
+
+
+    category_styles = {
+
+        "Established": "green",
+
+        "Regular": "cyan",
+
+        "Rotation": "yellow",
+
+        "Limited": "red",
+    }
+
+
+    for category in [
+        "Established",
+        "Regular",
+        "Rotation",
+        "Limited",
+    ]:
+
+        data = summary[
+            category
+        ]
+
+
+        style = category_styles[
+            category
+        ]
+
+
+        table.add_row(
+
+            f"[{style}]"
+            f"{category}"
+            f"[/{style}]",
+
+            str(
+                data["players"]
+            ),
+
+            f"{data['avg_minutes']:.0f}",
+
+            f"{data['avg_ppg']:.2f}",
+
+            f"{data['avg_points']:.1f}",
+
+            f"{data['avg_ownership']:.1f}%"
         )
 
 
