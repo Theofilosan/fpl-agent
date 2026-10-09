@@ -46,3 +46,16 @@ owned, doubtful and fixtureless targets. A gain above 0.5 heuristic units is a
 shortlist threshold, not expected points. Zero free transfers means hold;
 no points-hit, multi-transfer or chip recommendation is made. The CLI has no
 write endpoints and cannot execute a transfer. Recheck news before acting.
+
+## Public and offline CLI
+
+The default `python fpl.py --entry 6829404` now uses last published deadline
+picks, clearly labelled as NOT the current squad. Transfers since that deadline
+are invisible. `--current` explicitly requires authenticated current picks and
+never falls back. `--market-only` skips all manager/squad access.
+
+Use `--offline local-data` with bootstrap.json, fixtures.json, manager.json and
+squad.json in FPL response formats; market-only needs just the first two.
+Offline freshness is unverified. Public picks contain no selling prices, so
+transfer comparisons remain skipped. The tool never infers financials from
+public bank or team value. No login is required for public modes.
