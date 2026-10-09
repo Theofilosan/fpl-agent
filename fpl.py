@@ -304,6 +304,10 @@ def main(argv=None):
     # ========================================================
 
     player_rankings = []
+    if next_gameweek:
+        player_dataset = add_player_eligibility(
+            player_dataset, fixture_dataset, next_gameweek["id"]
+        )
 
     if next_gameweek:
 
