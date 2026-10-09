@@ -1253,3 +1253,21 @@ def print_squad_analysis(
                 f"({player['team']}) "
                 f"- Limited historical minutes"
             )
+
+
+
+def print_player_rankings(rankings, team_map, limit=10):
+    """A public shortlist, explicitly labelled as an uncalibrated heuristic."""
+    table = Table(title="Player shortlist (heuristic score, NOT expected points)")
+    for heading in ("Player", "Team", "Price", "Score", "Score/£m", "Why"):
+        table.add_column(heading)
+    eligible = [p for p in rankings if p["availability"] == 1 and p["score"] > 0]
+    for player in eligible[:limit]:
+        # API strings are literal text, not Rich markup.
+        from rich.text import Text
+        table.add_row(
+            Text(player["player"]), Text(team_map.get(player["team_id"], "Unknown")),
+            f"£{player['cost']/10:.1f}", f"{player['score']:.2f}",
+            str(player["value_score"]), Text(player["reason"]),
+        )
+    console.print(table)

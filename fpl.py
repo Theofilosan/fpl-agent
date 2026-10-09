@@ -1,3 +1,5 @@
+from player_analysis import score_players
+from display import print_player_rankings
 from fpl_api import (
     get_bootstrap,
     get_fixtures,
@@ -280,6 +282,11 @@ def main():
             )
         )
 
+
+        player_rankings = score_players(
+            players, fixture_dataset, next_gameweek["id"], NUMBER_OF_GAMEWEEKS
+        )
+        print_player_rankings(player_rankings, team_map)
 
         print_fixture_score_ranking(
 
