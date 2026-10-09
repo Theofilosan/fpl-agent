@@ -1271,3 +1271,20 @@ def print_player_rankings(rankings, team_map, limit=10):
             str(player["value_score"]), Text(player["reason"]),
         )
     console.print(table)
+
+
+
+def print_lineup(lineup):
+    from rich.text import Text
+    table = Table(title=f"Suggested XI ({lineup['formation']}) - heuristic, review before acting")
+    for label in ("Role", "Player", "Next-GW score"):
+        table.add_column(label)
+    for player in lineup["xi"]:
+        role = "C" if player["player_id"] == lineup["captain"]["player_id"] else "VC" if player["player_id"] == lineup["vice_captain"]["player_id"] else "XI"
+        table.add_row(role, Text(player["player"]), str(player["next_score"]))
+    table.add_row("Bench GK", Text(lineup["bench_goalkeeper"]["player"]), str(lineup["bench_goalkeeper"]["next_score"]))
+    for index, player in enumerate(lineup["bench_outfield"], 1):
+        table.add_row(f"Bench {index}", Text(player["player"]), str(player["next_score"]))
+    console.print(table)
+    for warning in lineup["warnings"]:
+        console.print(warning, markup=False, style="yellow")
