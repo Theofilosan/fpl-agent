@@ -1,3 +1,5 @@
+from squad_strategy import squad_rankings, choose_lineup
+from display import print_lineup
 from player_analysis import score_players
 from display import print_player_rankings
 from fpl_api import (
@@ -263,6 +265,8 @@ def main():
     # 8. FIXTURE ANALYSIS
     # ========================================================
 
+    player_rankings = []
+
     if next_gameweek:
 
         team_fixture_scores = (
@@ -415,6 +419,13 @@ def main():
     # ========================================================
     # 11. DISPLAY CURRENT SQUAD
     # ========================================================
+
+    if player_rankings:
+        try:
+            ranked_squad = squad_rankings(my_team.get("picks", []), player_rankings)
+            print_lineup(choose_lineup(ranked_squad))
+        except ValueError as error:
+            console.print(f"Could not suggest a legal lineup: {error}", markup=False)
 
     print_my_team(
 
