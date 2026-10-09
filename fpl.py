@@ -1,3 +1,19 @@
+import argparse
+from decimal import Decimal, InvalidOperation
+from transfers import transfer_options
+from display import print_transfer_options
+
+
+def parse_bank(value):
+    try:
+        amount = Decimal(value) * 10
+        if not amount.is_finite() or amount < 0 or amount != amount.to_integral_value():
+            raise ValueError
+        return int(amount)
+    except (InvalidOperation, ValueError):
+        raise argparse.ArgumentTypeError("Bank must be non-negative £m in 0.1 increments, e.g. 1.5.")
+
+
 from squad_strategy import squad_rankings, choose_lineup
 from display import print_lineup
 from player_analysis import score_players
@@ -106,7 +122,12 @@ def get_gameweek_status(
 # MAIN
 # ============================================================
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Read-only FPL analytics and squad suggestions")
+    parser.add_argument("--bank", type=parse_bank, help="Confirmed current bank in £m")
+    parser.add_argument("--free-transfers", type=int, choices=range(6), help="Confirmed remaining free transfers")
+    args = parser.parse_args(argv)
+
 
     # ========================================================
     # HEADER
@@ -424,6 +445,10 @@ def main():
         try:
             ranked_squad = squad_rankings(my_team.get("picks", []), player_rankings)
             print_lineup(choose_lineup(ranked_squad))
+            print_transfer_options(transfer_options(
+                ranked_squad, player_rankings,
+                bank=args.bank, free_transfers=args.free_transfers,
+            ))
         except ValueError as error:
             console.print(f"Could not suggest a legal lineup: {error}", markup=False)
 
