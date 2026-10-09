@@ -59,3 +59,12 @@ squad.json in FPL response formats; market-only needs just the first two.
 Offline freshness is unverified. Public picks contain no selling prices, so
 transfer comparisons remain skipped. The tool never infers financials from
 public bank or team value. No login is required for public modes.
+
+## Observed price changes
+
+Run `python fpl.py --market-only --snapshot .cache/prices.snapshot.json`.
+The first run saves a baseline; later runs show observed rises/drops since the
+previous run, not predictions. No polling, schedule, notifications or external
+price site is installed. Snapshots are local and ignored by Git. Corrupt JSON
+is not overwritten. Use a separate path for each season; the snapshot has no
+season identifier. Don't use two simultaneous processes on the same file.
