@@ -1303,3 +1303,18 @@ def print_transfer_options(report):
         table.add_row(Text(option["out"]), Text(option["in"]), str(option["gain"]),
                       f"£{option['bank_after']/10:.1f}", Text(option["reason"]))
     console.print(table)
+
+
+
+def print_price_changes(report):
+    from rich.text import Text
+    if report["since"] is None:
+        console.print("Price baseline saved. Run again later to compare; no prediction made.", markup=False)
+        return
+    table = Table(title=f"Observed price changes since {report['since']} (not predictions)")
+    for heading in ("Player", "Old price", "New price", "Change"):
+        table.add_column(heading)
+    for change in report["changes"]:
+        table.add_row(Text(change["player"]), f"£{change['old_cost']/10:.1f}",
+                      f"£{change['new_cost']/10:.1f}", f"{change['change']/10:+.1f}")
+    console.print(table)
