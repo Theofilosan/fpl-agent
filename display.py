@@ -1288,3 +1288,18 @@ def print_lineup(lineup):
     console.print(table)
     for warning in lineup["warnings"]:
         console.print(warning, markup=False, style="yellow")
+
+
+
+def print_transfer_options(report):
+    from rich.text import Text
+    console.print(report["note"], markup=False)
+    if not report["options"]:
+        return
+    table = Table(title="Single-transfer alternatives (not a combined plan)")
+    for heading in ("Out", "In", "Heuristic gain", "Bank after", "Why"):
+        table.add_column(heading)
+    for option in report["options"]:
+        table.add_row(Text(option["out"]), Text(option["in"]), str(option["gain"]),
+                      f"£{option['bank_after']/10:.1f}", Text(option["reason"]))
+    console.print(table)

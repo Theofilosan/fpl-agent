@@ -35,3 +35,14 @@ Captain and vice-captain are distinct starters; fully fit non-blank candidates
 are preferred. The goalkeeper substitute is separate from the ordered outfield
 bench. Forced risky starters and an empty captain pool produce warnings.
 This is not an auto-sub simulation or a prediction. No account changes are made.
+
+## Single-transfer alternatives
+
+Run `python fpl.py --bank 1.5 --free-transfers 1` to confirm current bank and
+remaining free transfers. Selling prices come from authenticated my-team picks,
+never market price. Missing financials skip comparisons. Each option is an
+independent same-position transfer within budget and the club limit, excluding
+owned, doubtful and fixtureless targets. A gain above 0.5 heuristic units is a
+shortlist threshold, not expected points. Zero free transfers means hold;
+no points-hit, multi-transfer or chip recommendation is made. The CLI has no
+write endpoints and cannot execute a transfer. Recheck news before acting.
