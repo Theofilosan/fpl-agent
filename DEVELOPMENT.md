@@ -26,3 +26,12 @@ These are heuristic units, not expected points. Weights are hand chosen, form
 and PPG overlap, and the historical minutes share is not a rotation forecast.
 No history produces zero evidence, not an invented prior. Injuries can lag API
 news. The public shortlist excludes doubtful or unavailable players.
+
+## Lineup and captain choices
+
+`squad_strategy.py` validates a 15-player squad, position counts and club limits,
+then searches legal formations to maximize next-gameweek heuristic score.
+Captain and vice-captain are distinct starters; fully fit non-blank candidates
+are preferred. The goalkeeper substitute is separate from the ordered outfield
+bench. Forced risky starters and an empty captain pool produce warnings.
+This is not an auto-sub simulation or a prediction. No account changes are made.
