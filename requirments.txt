@@ -1,3 +1,2 @@
-requests
-python-dotenv
-rich
+# Backwards-compatible spelling; use requirements.txt for new installs.
+-r requirements.txt
