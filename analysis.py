@@ -183,76 +183,32 @@ def add_fixture_scores_to_players(
 # PLAYER ELIGIBILITY
 # ============================================================
 
-def classify_player_eligibility(
-    minutes
-):
-    """
-    Classify players according to
-    historical minutes.
-    """
-
-    if minutes < 450:
-
+def classify_player_eligibility(minutes, possible_minutes=None):
+    """Historical minutes share, not a forecast of future starts."""
+    if not possible_minutes:
         return "Limited"
-
-    elif minutes < 1350:
-
+    ratio = max(0.0, min(minutes / possible_minutes, 1.0))
+    if ratio < 0.25:
+        return "Limited"
+    if ratio < 0.60:
         return "Rotation"
-
-    elif minutes < 2250:
-
+    if ratio < 0.85:
         return "Regular"
-
-    else:
-
-        return "Established"
+    return "Established"
 
 
-# ============================================================
-# ADD PLAYER ELIGIBILITY
-# ============================================================
-
-def add_player_eligibility(
-    player_dataset
-):
-    """
-    Add eligibility and minutes ratio
-    to every player.
-    """
-
-    MAX_MINUTES = 3420
-
-
+def add_player_eligibility(player_dataset, fixture_dataset=None, start_gameweek=None):
+    """Scale evidence against completed matches, rather than 38-season minutes."""
+    counts = {}
+    for fixture in fixture_dataset or []:
+        if fixture.get("finished") and start_gameweek and fixture["gameweek"] < start_gameweek:
+            team = fixture["team_id"]
+            counts[team] = counts.get(team, 0) + 1
     for player in player_dataset:
-
-        minutes = player.get(
-            "minutes",
-            0
-        )
-
-
-        player["eligibility"] = (
-            classify_player_eligibility(
-                minutes
-            )
-        )
-
-
-        minutes_ratio = (
-            minutes
-            / MAX_MINUTES
-        )
-
-
-        player["minutes_ratio"] = max(
-            0.0,
-            min(
-                minutes_ratio,
-                1.0
-            )
-        )
-
-
+        possible = 90 * counts.get(player["team_id"], 0)
+        minutes = player.get("minutes", 0)
+        player["eligibility"] = classify_player_eligibility(minutes, possible)
+        player["minutes_ratio"] = max(0.0, min(minutes / possible, 1.0)) if possible else 0.0
     return player_dataset
 
 

@@ -119,9 +119,9 @@ CI tests Python 3.10 and 3.12.
   shortlist filter, not proof that a move is worth making.
 
 Form and points per game overlap; weights are hand chosen and uncalibrated.
-FDR is coarse and injury flags can lag news. The older squad-analysis table's
-Limited/Rotation labels are legacy full-season sample labels, not forecasts;
-use the new ranking explanations for season-relative minutes evidence.
+FDR is coarse and injury flags can lag news. The squad-analysis table's
+Limited/Rotation/Regular/Established labels describe completed-match minutes
+share, not forecasts. Missing completed-match history remains a limited sample.
 
 ## Structure and remaining work
 
