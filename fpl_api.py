@@ -40,44 +40,53 @@ session.headers.update({
 })
 
 
-if FPL_AUTH_TOKEN:
 
-    session.headers.update({
-        "X-API-Authorization": FPL_AUTH_TOKEN
-    })
 
 
 # ============================================================
 # API HELPER
 # ============================================================
 
-def get_json(endpoint):
+def get_json(endpoint, *, authenticated=False):
     """
     Send a GET request to an FPL API endpoint.
     """
 
     url = f"{BASE_URL}{endpoint}"
+    headers = {}
+    if authenticated:
+        if not FPL_AUTH_TOKEN:
+            raise RuntimeError("FPL_AUTH_TOKEN is missing.")
+        headers["X-API-Authorization"] = FPL_AUTH_TOKEN
 
-    print(f"GET {url}")
+    # Requests are read-only; do not print URLs or authenticated response bodies.
 
 
     try:
 
         response = session.get(
             url,
-            timeout=15
+            headers=headers,
+            timeout=(5, 20),
+            allow_redirects=False
         )
 
     except requests.RequestException as error:
 
         raise RuntimeError(
-            f"Network error while calling FPL API: {error}"
+            "Network error while calling FPL API. Try again later."
         ) from error
 
 
     if response.status_code == 200:
 
-        return response.json()
+        try:
+            payload = response.json()
+        except ValueError as error:
+            raise RuntimeError("FPL API returned invalid JSON.") from error
+        if not isinstance(payload, (dict, list)):
+            raise RuntimeError("FPL API returned an unexpected response shape.")
+        return payload
 
 
     if response.status_code in (401, 403):
@@ -107,8 +116,7 @@ def get_json(endpoint):
 
     raise RuntimeError(
         f"\nFPL API request failed.\n"
-        f"HTTP status: {response.status_code}\n"
-        f"Response: {response.text[:500]}"
+        f"HTTP status: {response.status_code}"
     )
 
 
@@ -173,5 +181,6 @@ def get_my_team(manager_id):
 
 
     return get_json(
-        f"/my-team/{manager_id}/"
+        f"/my-team/{manager_id}/",
+        authenticated=True
     )
