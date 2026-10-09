@@ -1,3 +1,5 @@
+from price_tracking import track_prices
+from display import print_price_changes
 import json
 from pathlib import Path
 from fpl_api import get_picks
@@ -133,6 +135,7 @@ def main(argv=None):
     parser.add_argument("--current", action="store_true", help="Require authenticated current squad (no silent fallback)")
     parser.add_argument("--market-only", action="store_true", help="Only public fixture/player rankings")
     parser.add_argument("--offline", type=Path, help="Directory with bootstrap.json, fixtures.json, manager.json and squad.json")
+    parser.add_argument("--snapshot", type=Path, help="Compare/save local observed price baseline")
     args = parser.parse_args(argv)
     if args.entry < 1:
         parser.error("Entry must be positive.")
@@ -374,6 +377,9 @@ def main(argv=None):
         "[bold]Loading manager...[/bold]"
     )
 
+
+    if args.snapshot:
+        print_price_changes(track_prices(players, args.snapshot))
 
     if args.market_only:
         return
