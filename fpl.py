@@ -423,7 +423,7 @@ def main(argv=None):
     console.print()
 
     console.print(
-        "[bold]Loading current squad...[/bold]"
+        "[bold]Loading squad data...[/bold]"
     )
 
 
@@ -445,7 +445,7 @@ def main(argv=None):
 
 
         console.print(
-            "[green]✓ Current squad loaded[/green]"
+            "[green]✓ Squad data loaded[/green]"
         )
 
 
