@@ -2,7 +2,7 @@ name: Tests
 on:
   pull_request:
   push:
-    branches: [main, 'instinct/**']
+    branches: [main, 'feat/**', 'fix/**']
 permissions:
   contents: read
 jobs:
