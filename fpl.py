@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+from fpl_api import get_picks
 import argparse
 from decimal import Decimal, InvalidOperation
 from transfers import transfer_options
@@ -126,7 +129,18 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Read-only FPL analytics and squad suggestions")
     parser.add_argument("--bank", type=parse_bank, help="Confirmed current bank in £m")
     parser.add_argument("--free-transfers", type=int, choices=range(6), help="Confirmed remaining free transfers")
+    parser.add_argument("--entry", type=int, default=MANAGER_ID)
+    parser.add_argument("--current", action="store_true", help="Require authenticated current squad (no silent fallback)")
+    parser.add_argument("--market-only", action="store_true", help="Only public fixture/player rankings")
+    parser.add_argument("--offline", type=Path, help="Directory with bootstrap.json, fixtures.json, manager.json and squad.json")
     args = parser.parse_args(argv)
+    if args.entry < 1:
+        parser.error("Entry must be positive.")
+    def load(name, fetch):
+        if args.offline:
+            return json.loads((args.offline / (name + ".json")).read_text())
+        return fetch()
+
 
 
     # ========================================================
@@ -159,7 +173,7 @@ def main(argv=None):
     )
 
 
-    bootstrap = get_bootstrap()
+    bootstrap = load("bootstrap", get_bootstrap)
 
 
     console.print(
@@ -236,7 +250,7 @@ def main(argv=None):
     )
 
 
-    fixtures = get_fixtures()
+    fixtures = load("fixtures", get_fixtures)
 
 
     console.print(
@@ -361,11 +375,12 @@ def main(argv=None):
     )
 
 
+    if args.market_only:
+        return
+
     try:
 
-        manager = get_manager(
-            MANAGER_ID
-        )
+        manager = load("manager", lambda: get_manager(args.entry))
 
 
         console.print(
@@ -378,7 +393,7 @@ def main(argv=None):
         )
 
 
-    except RuntimeError as error:
+    except (RuntimeError, OSError, ValueError) as error:
 
         console.print(
             "[red]"
@@ -392,7 +407,7 @@ def main(argv=None):
         )
 
 
-        return
+        return 1
 
 
     # ========================================================
@@ -408,9 +423,19 @@ def main(argv=None):
 
     try:
 
-        my_team = get_my_team(
-            MANAGER_ID
-        )
+        if args.offline:
+            my_team = load("squad", None)
+            console.print("Offline squad: freshness unverified. Review before acting.", markup=False)
+        elif args.current:
+            my_team = get_my_team(args.entry)
+            console.print("Authenticated current squad", markup=False)
+        else:
+            event = manager.get("current_event")
+            if not event:
+                console.print("No published picks yet. Use --current if your squad is set.", markup=False)
+                return
+            my_team = get_picks(args.entry, event)
+            console.print(f"PUBLIC GW{event} DEADLINE PICKS, NOT CURRENT SQUAD. Transfers since that deadline are invisible.", markup=False, style="yellow")
 
 
         console.print(
@@ -418,7 +443,7 @@ def main(argv=None):
         )
 
 
-    except RuntimeError as error:
+    except (RuntimeError, OSError, ValueError) as error:
 
         console.print()
 
@@ -434,7 +459,7 @@ def main(argv=None):
         )
 
 
-        return
+        return 1
 
 
     # ========================================================
@@ -524,5 +549,9 @@ def main(argv=None):
 # ============================================================
 
 if __name__ == "__main__":
-
-    main()
+    import sys
+    try:
+        sys.exit(main() or 0)
+    except (RuntimeError, OSError, ValueError, KeyError) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        sys.exit(1)

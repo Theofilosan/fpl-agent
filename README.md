@@ -177,7 +177,12 @@ pip install -r requirements.txt
 
 # Configuration
 
-The project uses environment variables for authenticated FPL API access.
+The default mode uses public last-deadline picks and does not require a login.
+These are not the current squad: transfers since the deadline are invisible.
+Use `python fpl.py --market-only` for fixture/player rankings only.
+
+Authenticated current squad access is opt-in with `python fpl.py --current`.
+The project uses environment variables for that access.
 
 Create a `.env` file in the project root:
 
@@ -197,6 +202,8 @@ Run the application with:
 
 ```bash
 python fpl.py
+# Require authenticated current squad instead:
+python fpl.py --current
 ```
 
 The application will:
@@ -209,7 +216,7 @@ The application will:
 6. Calculate Fixture Scores
 7. Rank all 20 Premier League teams
 8. Load manager information
-9. Load the current squad
+9. Load public last-deadline picks (or current squad with --current)
 10. Display the results in the terminal
 
 ---

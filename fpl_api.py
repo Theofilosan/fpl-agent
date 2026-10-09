@@ -184,3 +184,9 @@ def get_my_team(manager_id):
         f"/my-team/{manager_id}/",
         authenticated=True
     )
+
+
+
+def get_picks(manager_id, gameweek):
+    """Public last-deadline picks, not the current squad."""
+    return get_json(f"/entry/{manager_id}/event/{gameweek}/picks/")
