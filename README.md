@@ -167,4 +167,4 @@ modes and observed-price snapshots.
 Still unimplemented from the original roadmap: calibrated/backtested expected
 points, recent-match rotation models, xG/xA-driven recommendations, multi-transfer
 optimization, chip/wildcard planning, external analyst inputs, natural-language
-AI questions and predictive price alerts. No paid service or LLM is required.
+questions and predictive price alerts. No paid service is required.
