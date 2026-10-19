@@ -26,13 +26,12 @@ On Windows, activate with `.venv\Scripts\activate` instead. The old misspelled
 ## Quick start: no token
 
 ```sh
-python fpl.py
-python fpl.py --entry 6829404
 python fpl.py --market-only
+python fpl.py --entry YOUR_ENTRY_ID
 python fpl.py --help
 ```
 
-The default entry is 6829404. Default mode shows public **last published deadline
+Pass your entry ID with `--entry`, or set `FPL_ENTRY_ID`. Default mode shows public **last published deadline
 picks**, not the current squad. Transfers since that deadline are invisible.
 The report warns about this. `--market-only` skips manager and squad access and
 shows only player/fixture rankings. An entry without published picks gets market
@@ -49,7 +48,7 @@ FPL_AUTH_TOKEN=Bearer YOUR_TOKEN_HERE
 Then:
 
 ```sh
-python fpl.py --entry 6829404 --current
+python fpl.py --entry YOUR_ENTRY_ID --current
 ```
 
 Supply a valid FPL token authorized for that entry. The CLI does not obtain,
