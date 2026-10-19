@@ -49,7 +49,7 @@ write endpoints and cannot execute a transfer. Recheck news before acting.
 
 ## Public and offline CLI
 
-The default `python fpl.py --entry 6829404` now uses last published deadline
+The default `python fpl.py --entry YOUR_ENTRY_ID` now uses last published deadline
 picks, clearly labelled as NOT the current squad. Transfers since that deadline
 are invisible. `--current` explicitly requires authenticated current picks and
 never falls back. `--market-only` skips all manager/squad access.
