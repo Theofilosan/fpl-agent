@@ -31,11 +31,42 @@ python fpl.py --entry YOUR_ENTRY_ID
 python fpl.py --help
 ```
 
-Pass your entry ID with `--entry`, or set `FPL_ENTRY_ID`. Default mode shows public **last published deadline
+Pass your entry ID with `--entry`, or set `FPL_ENTRY_ID` (see below for how to find it). Default mode shows public **last published deadline
 picks**, not the current squad. Transfers since that deadline are invisible.
 The report warns about this. `--market-only` skips manager and squad access and
 shows only player/fixture rankings. An entry without published picks gets market
 rankings and a notice instead of an invented squad.
+
+## Find your entry ID
+
+Your entry ID (team ID) is a number that never changes and is not secret. Sign in at fantasy.premierleague.com, open the Points tab and read the address bar:
+
+```text
+https://fantasy.premierleague.com/entry/1234567/event/8
+```
+
+The number after `/entry/` is your entry ID (1234567 here). The number after `/event/` is the gameweek. In the mobile app the address bar is hidden, so use the site in a browser instead. Then either pass it each time or set it once:
+
+```sh
+python fpl.py --entry 1234567
+export FPL_ENTRY_ID=1234567
+```
+
+## Get your token
+
+Only `--current` needs a token, because the current squad comes from the logged-in `my-team` endpoint. The tool sends the token as the `X-API-Authorization` header, exactly as you store it. FPL has no public API for tokens, so this is manual and may change when the site changes:
+
+1. Sign in at fantasy.premierleague.com in your browser.
+2. Open the developer tools (F12) and go to the Network tab.
+3. Reload the page or open the My Team page, and click a request to `fantasy.premierleague.com/api/` (for example `my-team`).
+4. In the request headers, copy the value of `x-api-authorization`, including the word `Bearer`.
+5. Put it in a `.env` file in the project root (this file is git-ignored):
+
+```text
+FPL_AUTH_TOKEN=Bearer eyJ...
+```
+
+Tokens expire, often within hours. If you get an authentication error, repeat the steps and replace the value. The token gives access to your account, so keep it out of issues, pull requests, screenshots and shell history, and never commit `.env`. If you shared it by accident, sign out of FPL everywhere to invalidate it. This steps list comes from how other community FPL tools describe it and has not been tested end to end with this project.
 
 ## Current squad: authenticated opt-in
 
