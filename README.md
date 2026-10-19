@@ -10,7 +10,7 @@ against current news and your actual squad before using them.
 ## Install
 
 Requires Python 3.10+ and internet access for live data. No FPL login is needed
-for public mode. The repository is private, so cloning needs GitHub access.
+for public mode.
 
 ```sh
 git clone https://github.com/Theofilosan/fpl-agent.git
