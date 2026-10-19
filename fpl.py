@@ -1,6 +1,7 @@
 from price_tracking import track_prices
 from display import print_price_changes
 import json
+import os
 from pathlib import Path
 from fpl_api import get_picks
 import argparse
@@ -59,7 +60,8 @@ from display import (
 # CONFIGURATION
 # ============================================================
 
-MANAGER_ID = 6829404
+# Set FPL_ENTRY_ID or pass --entry to look at a specific manager.
+MANAGER_ID = int(os.environ.get("FPL_ENTRY_ID", "0"))
 
 NUMBER_OF_GAMEWEEKS = 5
 
@@ -137,8 +139,10 @@ def main(argv=None):
     parser.add_argument("--offline", type=Path, help="Directory with bootstrap.json, fixtures.json, manager.json and squad.json")
     parser.add_argument("--snapshot", type=Path, help="Compare/save local observed price baseline")
     args = parser.parse_args(argv)
-    if args.entry < 1:
+    if args.entry < 0:
         parser.error("Entry must be positive.")
+    if args.entry == 0 and not (args.market_only or args.offline):
+        parser.error("Pass --entry or set FPL_ENTRY_ID, or use --market-only.")
     def load(name, fetch):
         if args.offline:
             return json.loads((args.offline / (name + ".json")).read_text())
